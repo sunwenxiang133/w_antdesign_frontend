@@ -165,8 +165,13 @@ const handleUpload = async ({ file, onProgress, onSuccess, onError }) => {
     }
   }
 
-  console.log('执行到自定义上传', uploadUrlForAction.value, binaryData, config)
   try {
+    console.log(
+      '执行到自定义上传',
+      uploadUrlForAction.value,
+      binaryData,
+      config
+    )
     const response = await requests.put(
       uploadUrlForAction.value,
       binaryData,

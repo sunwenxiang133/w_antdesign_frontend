@@ -153,6 +153,7 @@
     </a-modal>
     <a-modal
       v-model:open="addProjectButtonVisible"
+      @ok="createProjectButton"
       title="项目添加"
       centered
       ok-text="确认"
@@ -219,6 +220,16 @@ const createProjectInfo = reactive({
   desc: '',
   modelFileName: ''
 })
+
+const createProjectButton = async () => {
+  let tmp = await ProjectCreate({
+    name: createProjectInfo.name,
+    desc: createProjectInfo.desc,
+    modelFileName: createProjectInfo.modelFileName
+  })
+  inputButtonVisible.value = false
+  window.location.reload()
+}
 
 const deployProjectClicked = async () => {
   inputButtonVisible.value = !inputButtonVisible.value
@@ -336,13 +347,13 @@ const handleUpload = async ({ file, onProgress, onSuccess, onError }) => {
   const config = {
     headers: {
       'Content-Type': file.type
+    },
+    onUploadProgress: progressEvent => {
+      const percent = Math.round(
+        (progressEvent.loaded / progressEvent.total) * 100
+      )
+      onProgress({ percent })
     }
-    // onUploadProgress: progressEvent => {
-    //   const percent = Math.round(
-    //     (progressEvent.loaded / progressEvent.total) * 100
-    //   )
-    //   onProgress({ percent })
-    // }
   }
 
   try {
