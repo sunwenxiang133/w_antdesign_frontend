@@ -103,6 +103,8 @@
     <a-modal
       v-model:open="inputButtonVisible"
       @ok="deployProjectClicked"
+      ok-text="确认"
+      cancel-text="取消"
       title="部署"
       centered
     >
@@ -149,7 +151,13 @@
         </a-select-option>
       </a-select>
     </a-modal>
-    <a-modal v-model:open="addProjectButtonVisible" title="项目添加" centered>
+    <a-modal
+      v-model:open="addProjectButtonVisible"
+      title="项目添加"
+      centered
+      ok-text="确认"
+      cancel-text="取消"
+    >
       <div>项目名称</div>
       <a-input
         v-model:value="createProjectInfo.name"

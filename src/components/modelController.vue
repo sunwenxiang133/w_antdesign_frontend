@@ -70,6 +70,8 @@
     </div>
     <a-modal
       v-model:open="inputButtonVisible"
+      ok-text="确认"
+      cancel-text="取消"
       title="模型添加"
       @ok="createModelButton"
       centered
