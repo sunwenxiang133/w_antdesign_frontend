@@ -320,12 +320,13 @@ const handleAction = async file => {
 
   // // 使用setTimeout等待5秒（5000毫秒）
   // setTimeout(doSomething, 1000)
+  let tmpFileName = file.name + Math.ceil(Math.random() * 10000)
   try {
     const data = await PresignUrl({
       modelName: createProjectInfo.name,
-      fileName: file.name
+      fileName: tmpFileName
     })
-    createProjectInfo.modelFileName = file.name
+    createProjectInfo.modelFileName = tmpFileName
     console.log(
       '###执行了handleAction',
       data.data.url,
