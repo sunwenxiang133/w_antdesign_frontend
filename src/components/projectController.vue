@@ -167,6 +167,10 @@
       />
       <br />
       <br />
+      <div>选择模型</div>
+
+      <br />
+      <br />
       <div>项目描述</div>
       <a-textarea
         v-model:value="createProjectInfo.desc"

@@ -58,6 +58,7 @@
                 <div style="flex: 1">删除</div>
               </div>
             </template>
+            <a-btn @click="downloadModel">下载模型</a-btn>
             <!-- <template #actions>
               <a-space style="display: flex">
                 <a-button type="primary" block style="flex: 1">按钮1</a-button>
@@ -127,6 +128,10 @@ onMounted(async () => {
   console.log('模型列表获取', tmp)
   cardInfos.value = tmp.data.list
 })
+
+const downloadModel = () => {
+  console.log('下载模型')
+}
 
 const uploadFileList = ref()
 
