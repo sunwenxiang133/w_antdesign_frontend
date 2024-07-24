@@ -14,6 +14,7 @@
       style="margin-top: 2vh"
       :columns="columns"
       :data-source="deployLists"
+      :pagination="pagination"
     >
       <template #headerCell="{ column }">
         <template v-if="column.key === 'deviceName'">
@@ -57,12 +58,38 @@ import { ref, onMounted } from 'vue'
 
 const deployLists = ref([])
 
+let pagination = ref({
+  // 数据总数
+  total: dataSource.length,
+  // 当前页数
+  current: 1,
+  // 每页条数
+  pageSize: 4,
+  // 展示总数
+  showTotal: total => `共 ${total} 条`,
+  // 是否可以改变pageSize
+  showSizeChanger: true,
+  // 设置每页可以展示多少条的选项
+  pageSizeOptions: ['2', '5', '8', '4'],
+  // 改变pageSize后触发
+  showSizeChange: (current, pageSize) => (
+    (pagination.value.current = current), (pagination.value.pageSize = pageSize)
+  ),
+  // 小尺寸分页
+  size: 'small',
+  // 是否可以快速跳转至某页
+  showQuickJumper: true,
+  //默认条数
+  defaultPageSize: 4
+})
+
 onMounted(async () => {
   let tmp = await DeployList({
-    pageNum: 0,
-    pageSize: 100
+    pageNum: pagination.value.current,
+    pageSize: pagination.value.pageSize
   })
   deployLists.value = tmp.data.list
+  pagination.value.total = tmp.data.total
   startExecution()
 })
 

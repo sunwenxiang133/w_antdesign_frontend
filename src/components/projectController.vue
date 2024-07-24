@@ -425,9 +425,10 @@ onMounted(async () => {
   //   Status: 1
   // })
   let tmp = await ProjectListReq({
-    pageNum: 0,
-    pageSize: 100
+    pageNum: currentPage.value,
+    pageSize: pageSize.value
   })
+  totalPage.value = tmp.data.total
   console.log('DeviceList为', tmp)
   projectList.value = tmp.data.list
 })
@@ -478,9 +479,16 @@ const currentPage = ref(1)
 const totalPage = ref(20)
 const pageSizeOptions = ref(['10', '20', '30', '40'])
 const pageSize = ref(5)
-const handlePageChange = page => {
+const handlePageChange = async page => {
   console.log('当前页:', page)
   currentPage.value = page
+  let tmp = await ProjectListReq({
+    pageNum: currentPage.value,
+    pageSize: pageSize.value
+  })
+  totalPage.value = tmp.data.total
+  console.log('DeviceList为', tmp)
+  projectList.value = tmp.data.list
 }
 
 const handleSizeChange = totalPage => {

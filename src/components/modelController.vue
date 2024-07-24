@@ -69,6 +69,15 @@
         </a-col>
       </a-row>
     </div>
+    <a-pagination
+      v-model:current="currentPage"
+      show-quick-jumper
+      :pageSize="pageSize"
+      :pageSizeOptions="pageSizeOptions"
+      :total="totalPage"
+      @change="handlePageChange"
+      @show-size-change="handleSizeChange"
+    />
     <a-modal
       v-model:open="inputButtonVisible"
       ok-text="确认"
@@ -120,10 +129,31 @@ import { ref, reactive, onMounted } from 'vue'
 import { ModelCreate, PresignUrl, ModelList } from '../api/api.js'
 import requests from '../api/request.js'
 
+const currentPage = ref(1)
+const totalPage = ref(20)
+const pageSizeOptions = ref(['10', '20', '30', '40'])
+const pageSize = ref(5)
+const handlePageChange = async page => {
+  console.log('当前页:', page)
+  currentPage.value = page
+  let tmp = await ModelList({
+    pageNum: currentPage.value,
+    pageSize: pageSize.value
+  })
+  totalPage.value = tmp.data.total
+  console.log('DeviceList为', tmp)
+  cardInfos.value = tmp.data.list
+}
+
+const handleSizeChange = totalPage => {
+  console.log('每页显示条目数:', totalPage)
+  totalPage.value = totalPage
+}
+
 onMounted(async () => {
   let tmp = await ModelList({
-    pageNum: 0,
-    pageSize: 100
+    pageNum: currentPage.value,
+    pageSize: pageSize.value
   })
   console.log('模型列表获取', tmp)
   cardInfos.value = tmp.data.list
