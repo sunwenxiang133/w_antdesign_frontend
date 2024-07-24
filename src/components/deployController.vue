@@ -45,6 +45,7 @@
         <template v-else-if="column.key === 'action'">
           <a-button style="margin-right: 1vw">重启</a-button>
           <a-button>停止</a-button>
+          <a-button @click="deployDeleteClicked">删除</a-button>
         </template>
       </template>
     </a-table>
@@ -53,10 +54,17 @@
 
 <script setup>
 import { progressProps } from 'ant-design-vue/es/progress/props'
-import { DeployList } from '../api/api.js'
+import { message } from 'ant-design-vue'
+import { DeployList, DeployDelete } from '../api/api.js'
 import { ref, onMounted } from 'vue'
 
 const deployLists = ref([])
+
+const deployDeleteClicked = async id => {
+  let tmp = DeployDelete(id)
+  message.info(tmp.data.msg)
+  window.location.reload()
+}
 
 let pagination = ref({
   // 数据总数

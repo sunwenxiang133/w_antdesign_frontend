@@ -50,12 +50,10 @@
                   height: 100%;
                 "
               >
-                <!-- <a-button style="flex: 1; min-height: 30px" key="编辑"
-                  >编辑</a-button
-                >
-                <a-button style="flex: 1" key="删除">删除</a-button> -->
                 <div style="flex: 1">编辑</div>
-                <div style="flex: 1">删除</div>
+                <div style="flex: 1" @click="modelDeleteClicked(item.id)">
+                  删除
+                </div>
               </div>
             </template>
             <a-btn @click="downloadModel">下载模型</a-btn>
@@ -126,8 +124,15 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
-import { ModelCreate, PresignUrl, ModelList } from '../api/api.js'
+import { message } from 'ant-design-vue'
+import { ModelCreate, PresignUrl, ModelList, ModelDelete } from '../api/api.js'
 import requests from '../api/request.js'
+
+const modelDeleteClicked = async id => {
+  let tmp = await ModelDelete(id)
+  message.info(tmp.data.msg)
+  window.location.reload()
+}
 
 const currentPage = ref(1)
 const totalPage = ref(20)

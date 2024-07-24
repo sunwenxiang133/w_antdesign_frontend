@@ -80,6 +80,7 @@
         <div style="display: flex; align-items: center">
           <a-button type="primary" style="margin-right: 8px">编辑</a-button>
           <a-button @click="deployButton(item.id)">部署</a-button>
+          <a-button @click="deleteProjectClicked(item.id)">删除</a-button>
         </div>
       </a-row>
       <a-row style="display: flex; align-items: end; flex-direction: column">
@@ -204,6 +205,7 @@
 
 <script setup>
 import { ref, onMounted, reactive } from 'vue'
+import { message } from 'ant-design-vue'
 import {
   testApiParams,
   testApiData,
@@ -216,8 +218,15 @@ import {
   PresignUrl,
   PresignedUrl,
   ProjectListReq,
-  ModelList
+  ModelList,
+  ProjectDelete
 } from '../api/api.js'
+
+const deleteProjectClicked = async id => {
+  let tmp = await ProjectDelete(id)
+  message.info(tmp.data.msg)
+  window.location.reload()
+}
 
 const createProjectInfo = reactive({
   name: '',

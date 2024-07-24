@@ -24,6 +24,11 @@ export const DeployStop = data => requests.post('/v1/deploy/stop', data)
 export const DeployListDevice = data =>
   requests.post('/v1/deploy/list/device', data)
 
+// NOTE: 部署任务删除
+export const DeployDelete = data => {
+  requests.post('/v1/deploy/delete', data)
+}
+
 // NOTE: 获取设备列表
 export const DeviceList = data => requests.post('/v1/device/list', data)
 
