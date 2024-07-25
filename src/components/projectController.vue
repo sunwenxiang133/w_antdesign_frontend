@@ -78,7 +78,12 @@
           </div>
         </div>
         <div style="display: flex; align-items: center">
-          <a-button type="primary" style="margin-right: 8px">编辑</a-button>
+          <a-button
+            type="primary"
+            style="margin-right: 8px"
+            @click="projectUpdateClicked(item.id)"
+            >编辑</a-button
+          >
           <a-button @click="deployButton(item.id)">部署</a-button>
           <a-button @click="deleteProjectClicked(item.id)">删除</a-button>
         </div>
@@ -192,6 +197,41 @@
         </a-button>
       </a-upload>
     </a-modal>
+
+    <a-modal
+      v-model:open="projectUpdatePanel"
+      @ok="projectUpdateOkButton"
+      title="项目添加"
+      centered
+      ok-text="确认"
+      cancel-text="取消"
+    >
+      <div>项目名称</div>
+      <a-input
+        v-model:value="createProjectInfo.name"
+        placeholder="请输入"
+        allow-clear
+      />
+      <br />
+      <br />
+      <div>选择模型</div>
+
+      <br />
+      <br />
+      <div>项目描述</div>
+      <a-textarea
+        v-model:value="createProjectInfo.desc"
+        placeholder="请输入至少五个字符"
+        allow-clear
+        style="margin-bottom: 1.5vh"
+      />
+      <div>文件名称</div>
+      <a-input
+        v-model:value="createProjectInfo.fileName"
+        placeholder="请输入"
+        allow-clear
+      />
+    </a-modal>
     <!-- <a-button @click="test1">123123</a-button> -->
     <a-button @click="test2">部署任务创建</a-button>
     <a-button>部署任务添加</a-button>
@@ -219,7 +259,8 @@ import {
   PresignedUrl,
   ProjectListReq,
   ModelList,
-  ProjectDelete
+  ProjectDelete,
+  ProjectUpdate
 } from '../api/api.js'
 
 const deleteProjectClicked = async id => {
@@ -228,11 +269,30 @@ const deleteProjectClicked = async id => {
   window.location.reload()
 }
 
+const projectUpdateOkButton = async () => {
+  let tmp = await ProjectUpdate({
+    id: createProjectInfo.id,
+    name: createProjectInfo.name,
+    desc: createProjectInfo.desc,
+    fileName: createProjectInfo.fileName,
+    modelId: createProjectInfo.modelId
+  })
+}
+
 const createProjectInfo = reactive({
+  id: 1,
   name: '',
   desc: '',
-  modelFileName: ''
+  modelFileName: '',
+  fileName: '',
+  modelId: 23
 })
+
+const projectUpdatePanel = ref(false)
+const projectUpdateClicked = id => {
+  projectUpdatePanel.value = !projectUpdatePanel.value
+  createProjectInfo.id = id
+}
 
 const createProjectButton = async () => {
   let tmp = await ProjectCreate({
