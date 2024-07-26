@@ -50,7 +50,12 @@
                   height: 100%;
                 "
               >
-                <div style="flex: 1">编辑</div>
+                <div
+                  style="flex: 1"
+                  @click="modelUpdateButtonPanelClicked(item)"
+                >
+                  编辑
+                </div>
                 <div style="flex: 1" @click="modelDeleteClicked(item.id)">
                   删除
                 </div>
@@ -76,6 +81,39 @@
       @change="handlePageChange"
       @show-size-change="handleSizeChange"
     />
+
+    <a-modal
+      v-model:open="modelUpdatePanel"
+      ok-text="确认"
+      cancel-text="取消"
+      title="模型修改"
+      @ok="updateModelButton"
+      centered
+    >
+      <div>模型名称</div>
+      <a-input
+        v-model:value="cardInfo.value.name"
+        placeholder="请输入"
+        allow-clear
+      />
+      <br />
+      <br />
+      <div>模型描述</div>
+      <a-textarea
+        v-model:value="cardInfo.value.desc"
+        placeholder="请输入至少五个字符"
+        allow-clear
+        style="margin-bottom: 1.5vh"
+      />
+      <div>模型名称</div>
+      <a-textarea
+        v-model:value="cardInfo.value.fileName"
+        placeholder="请输入"
+        allow-clear
+        style="margin-bottom: 1.5vh"
+      />
+    </a-modal>
+
     <a-modal
       v-model:open="inputButtonVisible"
       ok-text="确认"
@@ -125,8 +163,31 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { message } from 'ant-design-vue'
-import { ModelCreate, PresignUrl, ModelList, ModelDelete } from '../api/api.js'
+import {
+  ModelCreate,
+  PresignUrl,
+  ModelList,
+  ModelDelete,
+  ModelUpdate
+} from '../api/api.js'
 import requests from '../api/request.js'
+
+const modelUpdatePanel = ref(false)
+
+const cardInfo = ref({
+  id: 23,
+  name: '',
+  desc: '',
+  fileName: ''
+})
+
+const modelUpdateButtonPanelClicked = item => {
+  modelUpdatePanel.value = true
+  cardInfo.value.id = item.id
+  cardInfo.value.name = item.name
+  cardInfo.value.desc = item.desc
+  cardInfo.value.fileName = item.fileName
+}
 
 const modelDeleteClicked = async id => {
   let tmp = await ModelDelete(id)
@@ -262,6 +323,17 @@ const createModelButton = async () => {
   })
   console.log('tmp', tmp)
   inputButtonVisible.value = false
+  window.location.reload()
+}
+
+const updateModelButton = async () => {
+  let tmp = await ModelUpdate({
+    id: cardInfo.value.id,
+    name: cardInfo.value.name,
+    desc: cardInfo.value.desc,
+    fileName: cardInfo.value.fileName
+  })
+  modelUpdatePanel.value = false
   window.location.reload()
 }
 
