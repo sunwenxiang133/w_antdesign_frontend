@@ -43,9 +43,15 @@
         </template> -->
 
         <template v-else-if="column.key === 'action'">
-          <a-button style="margin-right: 1vw">重启</a-button>
-          <a-button>停止</a-button>
-          <a-button @click="deployDeleteClicked">删除</a-button>
+          <a-button
+            style="margin-right: 1vw"
+            @click="deployRestartClicked(column.deployId)"
+            >重启</a-button
+          >
+          <a-button @click="deployStopClicked(column.deployId)">停止</a-button>
+          <a-button @click="deployDeleteClicked(column.deployId)"
+            >删除</a-button
+          >
         </template>
       </template>
     </a-table>
@@ -55,13 +61,31 @@
 <script setup>
 import { progressProps } from 'ant-design-vue/es/progress/props'
 import { message } from 'ant-design-vue'
-import { DeployList, DeployDelete } from '../api/api.js'
+import { DeployList, DeployDelete, DeployStop } from '../api/api.js'
 import { ref, onMounted } from 'vue'
 
 const deployLists = ref([])
 
+const deployRestartClicked = async id => {
+  let tmp = DeployRestart({
+    deployId: id
+  })
+  message.info(tmp.data.msg)
+  window.location.reload()
+}
+
+const deployStopClicked = async id => {
+  let tmp = DeployStop({
+    deployId: id
+  })
+  message.info(tmp.data.msg)
+  window.location.reload()
+}
+
 const deployDeleteClicked = async id => {
-  let tmp = DeployDelete(id)
+  let tmp = DeployDelete({
+    deployId: id
+  })
   message.info(tmp.data.msg)
   window.location.reload()
 }

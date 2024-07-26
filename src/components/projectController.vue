@@ -114,14 +114,14 @@
       title="部署"
       centered
     >
-      <div>命令</div>
+      <!-- <div>命令</div>
       <a-textarea
         v-model:value="deployProjectInfo.cmd"
         placeholder="请输入命令"
         allow-clear
         style="margin-bottom: 1.5vh"
       />
-      <br />
+      <br /> -->
       <div>设备</div>
       <!-- <a-input v-model:value="value1" placeholder="请输入" allow-clear /> -->
       <!-- <div @click="modelVisible = !modelVisible">模型1</div> -->
