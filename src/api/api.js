@@ -36,7 +36,7 @@ export const DeviceList = data => requests.post('/v1/device/list', data)
 export const ModelCreate = data => requests.post('/v1/model/create', data)
 
 // NOTE: 预签名URL(模型)
-export const PresignUrl = data => requests.post('/v1/model/presignUrl', data)
+export const PresignUrl = data => requests.post('/v1/model/presignedUrl', data)
 
 // NOTE:模型列表
 export const ModelList = data => requests.post('/v1/model/list', data)

@@ -56,7 +56,7 @@
                 >
                   编辑
                 </div>
-                <div style="flex: 1" @click="modelDeleteClicked(item.id)">
+                <div style="flex: 1" @click="modelDeleteClicked(item)">
                   删除
                 </div>
               </div>
@@ -92,7 +92,7 @@
     >
       <div>模型名称</div>
       <a-input
-        v-model:value="cardInfo.value.name"
+        v-model:value="cardInfo.name"
         placeholder="请输入"
         allow-clear
       />
@@ -100,18 +100,18 @@
       <br />
       <div>模型描述</div>
       <a-textarea
-        v-model:value="cardInfo.value.desc"
+        v-model:value="cardInfo.desc"
         placeholder="请输入至少五个字符"
         allow-clear
         style="margin-bottom: 1.5vh"
       />
-      <div>模型名称</div>
+      <!-- <div>模型名称</div>
       <a-textarea
-        v-model:value="cardInfo.value.fileName"
+        v-model:value="cardInfo.fileName"
         placeholder="请输入"
         allow-clear
         style="margin-bottom: 1.5vh"
-      />
+      />  -->
     </a-modal>
 
     <a-modal
@@ -182,16 +182,20 @@ const cardInfo = ref({
 })
 
 const modelUpdateButtonPanelClicked = item => {
+  console.log('测试111',item.value,item,item.id,item.name)
   modelUpdatePanel.value = true
   cardInfo.value.id = item.id
   cardInfo.value.name = item.name
   cardInfo.value.desc = item.desc
   cardInfo.value.fileName = item.fileName
+  console.log('测试111',item.value,item,item.id,cardInfo.value.name)
 }
 
-const modelDeleteClicked = async id => {
-  let tmp = await ModelDelete(id)
-  message.info(tmp.data.msg)
+const modelDeleteClicked = async item => {
+  let tmp = await ModelDelete({
+    id: item.id
+  })
+  message.info(tmp.msg)
   window.location.reload()
 }
 
@@ -221,7 +225,8 @@ onMounted(async () => {
     pageNum: currentPage.value,
     pageSize: pageSize.value
   })
-  console.log('模型列表获取', tmp)
+  console.log('模型列表获取', tmp.data.total)
+  totalPage.value=tmp.data.total
   cardInfos.value = tmp.data.list
 })
 
@@ -298,7 +303,7 @@ const handleAction = async file => {
   let tmpFileName = file.name + Math.ceil(Math.random() * 10000)
   try {
     const data = await PresignUrl({
-      modelName: createModelInfo.name,
+      // modelName: createModelInfo.name,
       fileName: tmpFileName
     })
     createModelInfo.modelFileName = tmpFileName

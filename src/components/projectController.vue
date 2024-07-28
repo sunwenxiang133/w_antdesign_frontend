@@ -141,9 +141,9 @@
           {{ item }}
         </a-select-option>
       </a-select>
-      <div>模型</div>
-      <!-- <a-input v-model:value="value1" placeholder="请输入" allow-clear /> -->
-      <!-- <div @click="modelVisible = !modelVisible">模型1</div> -->
+      <!-- <div>模型</div>
+      <a-input v-model:value="value1" placeholder="请输入" allow-clear /> 
+      
       <a-select
         v-model:value="selectedItem"
         style="width: 300px"
@@ -155,7 +155,7 @@
         <a-select-option v-for="item in filteredData" :key="item" :value="item">
           {{ item }}
         </a-select-option>
-      </a-select>
+      </a-select> -->
     </a-modal>
     <a-modal
       v-model:open="addProjectButtonVisible"
@@ -215,6 +215,19 @@
       <br />
       <br />
       <div>选择模型</div>
+      
+      <a-select
+        v-model:value="selectedItem"
+        style="width: 300px"
+        placeholder="请选择字段"
+        :show-search="true"
+        :filter-option="false"
+        @search="onSearch"
+      >
+        <a-select-option v-for="item in filteredData" :key="item" :value="item">
+          {{ item }}
+        </a-select-option>
+      </a-select> 
 
       <br />
       <br />
@@ -264,8 +277,8 @@ import {
 } from '../api/api.js'
 
 const deleteProjectClicked = async id => {
-  let tmp = await ProjectDelete(id)
-  message.info(tmp.data.msg)
+  let tmp = await ProjectDelete({id:id})
+  message.info(tmp.msg)
   window.location.reload()
 }
 

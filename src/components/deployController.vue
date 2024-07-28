@@ -92,7 +92,7 @@ const deployDeleteClicked = async id => {
 
 let pagination = ref({
   // 数据总数
-  total: dataSource.length,
+  total: 10,
   // 当前页数
   current: 1,
   // 每页条数
