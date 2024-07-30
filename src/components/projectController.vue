@@ -22,9 +22,29 @@
         <div style="display: flex">
           <div>
             <a-radio-group v-model:value="chooseProject">
-              <a-radio-button value="a">全部</a-radio-button>
-              <a-radio-button value="b">已部署</a-radio-button>
-              <a-radio-button value="c">未部署</a-radio-button>
+              <a-radio-button
+                value="a"
+                @click="ProjectScreenButtonClicked(10086)"
+                >全部</a-radio-button
+              >
+              <a-radio-button value="b" @click="ProjectScreenButtonClicked(0)"
+                >下载代码</a-radio-button
+              >
+              <a-radio-button value="c" @click="ProjectScreenButtonClicked(1)"
+                >下载模型</a-radio-button
+              >
+              <a-radio-button value="d" @click="ProjectScreenButtonClicked(2)"
+                >未部署</a-radio-button
+              >
+              <a-radio-button value="e" @click="ProjectScreenButtonClicked(3)"
+                >未部署</a-radio-button
+              >
+              <a-radio-button value="f" @click="ProjectScreenButtonClicked(4)"
+                >未部署</a-radio-button
+              >
+              <a-radio-button value="g" @click="ProjectScreenButtonClicked(5)"
+                >未部署</a-radio-button
+              >
             </a-radio-group>
           </div>
           <div>
@@ -215,7 +235,7 @@
       <br />
       <br />
       <div>选择模型</div>
-      
+
       <a-select
         v-model:value="selectedItem"
         style="width: 300px"
@@ -227,7 +247,7 @@
         <a-select-option v-for="item in filteredData" :key="item" :value="item">
           {{ item }}
         </a-select-option>
-      </a-select> 
+      </a-select>
 
       <br />
       <br />
@@ -277,7 +297,7 @@ import {
 } from '../api/api.js'
 
 const deleteProjectClicked = async id => {
-  let tmp = await ProjectDelete({id:id})
+  let tmp = await ProjectDelete({ id: id })
   message.info(tmp.msg)
   window.location.reload()
 }
@@ -300,6 +320,36 @@ const createProjectInfo = reactive({
   fileName: '',
   modelId: 23
 })
+
+const ProjectScreenButtonClicked = num => {
+  if (num === 0) {
+    projectListDisplay.value = projectList.value.filter(
+      item => item.status === 0
+    )
+  } else if (num === 1) {
+    projectListDisplay.value = projectList.value.filter(
+      item => item.status === 1
+    )
+  } else if (num === 2) {
+    projectListDisplay.value = projectList.value.filter(
+      item => item.status === 2
+    )
+  } else if (num === 3) {
+    projectListDisplay.value = projectList.value.filter(
+      item => item.status === 3
+    )
+  } else if (num === 4) {
+    projectListDisplay.value = projectList.value.filter(
+      item => item.status === 4
+    )
+  } else if (num === 5) {
+    projectListDisplay.value = projectList.value.filter(
+      item => item.status === 5
+    )
+  } else if (num === 10086) {
+    projectListDisplay.value = projectList.value
+  }
+}
 
 const projectUpdatePanel = ref(false)
 const projectUpdateClicked = id => {
@@ -496,6 +546,8 @@ const ModelCreateButton = async () => {
   console.log('模型创建', tmp)
 }
 
+const projectListDisplay = ref([])
+
 onMounted(async () => {
   console.log('钩子函数')
   // let tmp = await DeployList({
@@ -513,6 +565,7 @@ onMounted(async () => {
   totalPage.value = tmp.data.total
   console.log('DeviceList为', tmp)
   projectList.value = tmp.data.list
+  projectListDisplay.value = tmp.data.list
 })
 
 const handleChange = info => {
