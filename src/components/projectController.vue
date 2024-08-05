@@ -564,9 +564,11 @@ onMounted(async () => {
   })
   totalPage.value = tmp.data.total
   console.log('DeviceList为', tmp)
+  projectOverview.value[0] = tmp.data.total
   projectList.value = tmp.data.list
   projectListDisplay.value = tmp.data.list
 })
+const getRealDataPanel = () => {}
 
 const handleChange = info => {
   if (info.file.status !== 'uploading') {
@@ -598,7 +600,7 @@ const test2 = async () => {
   console.log('test2 clicked', tmp)
 }
 
-const projectOverview = [6, 5, 3]
+const projectOverview = ref([6, 5, 3])
 const chooseProject = ref('a')
 const inputButtonVisible = ref(false)
 const addProjectButtonVisible = ref(false)
