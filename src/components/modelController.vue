@@ -64,8 +64,8 @@
             <a-btn @click="downloadModel">下载模型</a-btn>
             <!-- <template #actions>
               <a-space style="display: flex">
-                <a-button type="primary" block style="flex: 1">按钮1</a-button>
-                <a-button block style="flex: 1">按钮2</a-button>
+                <a-button type="primary" block style="flex: 1">按钮 1</a-button>
+                <a-button block style="flex: 1">按钮 2</a-button>
               </a-space>
             </template> -->
           </a-card>
@@ -147,7 +147,6 @@
       <a-upload
         :customRequest="handleUpload"
         :before-upload="handleAction"
-        accept=".zip,.rar,.7z"
         :maxCount="1"
         method="PUT"
       >
@@ -182,13 +181,13 @@ const cardInfo = ref({
 })
 
 const modelUpdateButtonPanelClicked = item => {
-  console.log('测试111',item.value,item,item.id,item.name)
+  console.log('测试 111',item.value,item,item.id,item.name)
   modelUpdatePanel.value = true
   cardInfo.value.id = item.id
   cardInfo.value.name = item.name
   cardInfo.value.desc = item.desc
   cardInfo.value.fileName = item.fileName
-  console.log('测试111',item.value,item,item.id,cardInfo.value.name)
+  console.log('测试 111',item.value,item,item.id,cardInfo.value.name)
 }
 
 const modelDeleteClicked = async item => {
@@ -196,7 +195,7 @@ const modelDeleteClicked = async item => {
     id: item.id
   })
   message.info(tmp.msg)
-  window.location.reload()
+  //window.location.reload()
 }
 
 const currentPage = ref(1)
@@ -204,19 +203,19 @@ const totalPage = ref(20)
 const pageSizeOptions = ref(['10', '20', '30', '40'])
 const pageSize = ref(5)
 const handlePageChange = async page => {
-  console.log('当前页:', page)
+  console.log('当前页：', page)
   currentPage.value = page
   let tmp = await ModelList({
     pageNum: currentPage.value,
     pageSize: pageSize.value
   })
   totalPage.value = tmp.data.total
-  console.log('DeviceList为', tmp)
+  console.log('DeviceList 为', tmp)
   cardInfos.value = tmp.data.list
 }
 
 const handleSizeChange = totalPage => {
-  console.log('每页显示条目数:', totalPage)
+  console.log('每页显示条目数：', totalPage)
   totalPage.value = totalPage
 }
 
@@ -244,7 +243,7 @@ const handleChange = ({ file, fileList }) => {
 
 const handleAction1 = async file => {
   await setTimeout(handleAction, 1000)
-  console.log('handleAction的file', file.name)
+  console.log('handleAction 的 file', file.name)
 }
 
 // 自定义上传
@@ -257,6 +256,7 @@ const customRequest = async file => {
 // 定义上传处理函数
 const handleUpload = async ({ file, onProgress, onSuccess, onError }) => {
   // 创建二进制数据
+  console.log('erjbvi',file.type);
   const binaryData = new Blob([file], { type: file.type })
 
   const config = {
@@ -295,10 +295,10 @@ const uploadUrlForAction = ref('')
 const handleAction = async file => {
   // // 定义要执行的函数
   // function doSomething() {
-  //   console.log('这段代码将在5秒后执行')
+  //   console.log('这段代码将在 5 秒后执行')
   // }
 
-  // // 使用setTimeout等待5秒（5000毫秒）
+  // // 使用 setTimeout 等待 5 秒（5000 毫秒）
   // setTimeout(doSomething, 1000)
   let tmpFileName = file.name + Math.ceil(Math.random() * 10000)
   try {
@@ -308,7 +308,7 @@ const handleAction = async file => {
     })
     createModelInfo.modelFileName = tmpFileName
     console.log(
-      '###执行了handleAction',
+      '###执行了 handleAction',
       data.data.url,
       createModelInfo.modelFileName
     )
@@ -324,11 +324,11 @@ const createModelButton = async () => {
   let tmp = await ModelCreate({
     name: createModelInfo.name,
     desc: createModelInfo.desc,
-    modelFileName: createModelInfo.modelFileName
+    fileName: createModelInfo.modelFileName
   })
   console.log('tmp', tmp)
   inputButtonVisible.value = false
-  window.location.reload()
+ // window.location.reload()
 }
 
 const updateModelButton = async () => {
@@ -339,7 +339,7 @@ const updateModelButton = async () => {
     fileName: cardInfo.value.fileName
   })
   modelUpdatePanel.value = false
-  window.location.reload()
+  // window.location.reload()
 }
 
 const createModelInfo = reactive({

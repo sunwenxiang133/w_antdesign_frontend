@@ -29,12 +29,15 @@
         <template v-if="column.key === 'status'">
           <a>
             <template v-if="record.status === 0">
-              下载代码({{ record.progress }}%)
+              下载代码 ({{ record.progress }}%)
             </template>
             <template v-if="record.status === 1">
-              下载模型({{ record.progress }}%)
+              下载模型 ({{ record.progress }}%)
             </template>
-            <template v-if="record.status === 2"> 部署成功 </template>
+            <template v-if="record.status === 2"> 已部署 </template>
+            <template v-if="record.status === 3"> 部署失败 </template>
+            <template v-if="record.status === 4"> 设备离线 </template>
+            <template v-if="record.status === 5"> 未运行 </template>
           </a>
         </template>
 
@@ -45,11 +48,11 @@
         <template v-else-if="column.key === 'action'">
           <a-button
             style="margin-right: 1vw"
-            @click="deployRestartClicked(column.deployId)"
+            @click="deployRestartClicked(record.deployId)"
             >重启</a-button
           >
-          <a-button @click="deployStopClicked(column.deployId)">停止</a-button>
-          <a-button @click="deployDeleteClicked(column.deployId)"
+          <a-button @click="deployStopClicked(record.deployId)">停止</a-button>
+          <a-button @click="deployDeleteClicked(record.deployId)"
             >删除</a-button
           >
         </template>
@@ -61,7 +64,7 @@
 <script setup>
 import { progressProps } from 'ant-design-vue/es/progress/props'
 import { message } from 'ant-design-vue'
-import { DeployList, DeployDelete, DeployStop } from '../api/api.js'
+import { DeployList, DeployDelete, DeployStop,DeployRestart } from '../api/api.js'
 import { ref, onMounted } from 'vue'
 
 const deployLists = ref([])
@@ -99,11 +102,11 @@ let pagination = ref({
   pageSize: 4,
   // 展示总数
   showTotal: total => `共 ${total} 条`,
-  // 是否可以改变pageSize
+  // 是否可以改变 pageSize
   showSizeChanger: true,
   // 设置每页可以展示多少条的选项
   pageSizeOptions: ['2', '5', '8', '4'],
-  // 改变pageSize后触发
+  // 改变 pageSize 后触发
   showSizeChange: (current, pageSize) => (
     (pagination.value.current = current), (pagination.value.pageSize = pageSize)
   ),
@@ -151,7 +154,7 @@ const startExecution = () => {
 
     if (!fastRequest) {
       clearInterval(timerId)
-      interval = 600000 // 修改间隔为60秒
+      interval = 600000 // 修改间隔为 60 秒
       timerId = setInterval(executeFunction, interval)
     }
   }
@@ -207,25 +210,25 @@ const projectList = [
   {
     projectName: '1',
     projectCode: 'hahaha',
-    projectModel: 'model名称',
+    projectModel: 'model 名称',
     isDeploy: '123123123'
   },
   {
     projectName: '2',
     projectCode: 'hahaha',
-    projectModel: 'model名称',
+    projectModel: 'model 名称',
     isDeploy: '123123123'
   },
   {
     projectName: '3',
     projectCode: 'hahaha',
-    projectModel: 'model名称',
+    projectModel: 'model 名称',
     isDeploy: '123123123'
   },
   {
     projectName: '4',
     projectCode: 'hahaha',
-    projectModel: 'model名称',
+    projectModel: 'model 名称',
     isDeploy: '123123123'
   }
 ]
@@ -234,12 +237,12 @@ const totalPage = ref(20)
 const pageSizeOptions = ref(['10', '20', '30', '40'])
 const pageSize = ref(5)
 const handlePageChange = page => {
-  console.log('当前页:', page)
+  console.log('当前页：', page)
   currentPage.value = page
 }
 
 const handleSizeChange = totalPage => {
-  console.log('每页显示条目数:', totalPage)
+  console.log('每页显示条目数：', totalPage)
   totalPage.value = totalPage
 }
 </script>

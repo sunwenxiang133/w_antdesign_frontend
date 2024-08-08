@@ -6,20 +6,24 @@ const routes = [
     component: () => import('../views/MainLayout.vue'),
     children: [
       {
-        path: '/dataPanel/project',
+        path: '/project',
         component: () => import('../components/projectController.vue')
       },
       {
-        path: '/dataPanel/model',
+        path: '/model',
         component: () => import('../components/modelController.vue')
       },
       {
-        path: '/dataPanel/deploy',
+        path: '/deploy',
         component: () => import('../components/deployController.vue')
       },
       {
+        path: '/test',
+        component: () => import('../components/HelloWorld.vue')
+      },
+      {
         path: '/',
-        redirect: '/dataPanel/project'
+        redirect: '/project'
       }
     ]
   }

@@ -8,12 +8,9 @@
       class="left-side"
       style="height: 100vh"
     >
-      <a-menu-item key="project">项目</a-menu-item>
+      <!-- <a-menu-item key="project">项目</a-menu-item>
       <a-menu-item key="model">模型</a-menu-item>
-      <!-- <a-sub-menu key="model" title="模型">
-        <a-menu-item key="model1">模型1</a-menu-item>
-        <a-menu-item key="model2">模型2</a-menu-item>
-      </a-sub-menu> -->
+      
       <a-sub-menu key="device" title="设备">
         <a-menu-item-group key="device-group" title="在线设备">
           <a-menu-item key="device-online1">设备1</a-menu-item>
@@ -24,7 +21,28 @@
           <a-menu-item key="device-offline2">设备2</a-menu-item>
         </a-menu-item-group>
       </a-sub-menu>
-      <a-menu-item key="deploy">部署</a-menu-item>
+      <a-menu-item key="deploy">部署</a-menu-item> -->
+      <template v-for="menu in menus" :key="menu.key">
+        <a-menu-item v-if="!menu.children" :key="menu.key">
+          {{ menu.title }}
+        </a-menu-item>
+        <a-sub-menu v-else :key="menu.key" :title="menu.title">
+          <template v-for="subMenu in menu.children" :key="subMenu.key">
+            <a-menu-item-group
+              v-if="subMenu.children"
+              :key="subMenu.key"
+              :title="subMenu.title"
+            >
+              <a-menu-item v-for="item in subMenu.children" :key="item.key">
+                {{ item.title }}
+              </a-menu-item>
+            </a-menu-item-group>
+            <a-menu-item v-else :key="subMenu.key">
+              {{ subMenu.title }}
+            </a-menu-item>
+          </template>
+        </a-sub-menu>
+      </template>
     </a-menu>
     <div style="flex: 1">
       <router-view class="right-side" style="flex: initial"></router-view>
@@ -49,6 +67,55 @@ export default defineComponent({
     const openKeys = ref(['project'])
     const router = useRouter()
 
+    const menus = ref([
+      {
+        key: 'project',
+        title: '项目'
+      },
+      {
+        key: 'model',
+        title: '模型'
+      },
+      {
+        key: 'device',
+        title: '设备',
+        children: [
+          {
+            key: 'device-group-online',
+            title: '在线设备',
+            children: [
+              {
+                key: 'device-online1',
+                title: '设备1'
+              },
+              {
+                key: 'device-online2',
+                title: '设备2'
+              }
+            ]
+          },
+          {
+            key: 'device-group-offline',
+            title: '离线设备',
+            children: [
+              {
+                key: 'device-offline1',
+                title: '设备1'
+              },
+              {
+                key: 'device-offline2',
+                title: '设备2'
+              }
+            ]
+          }
+        ]
+      },
+      {
+        key: 'deploy',
+        title: '部署'
+      }
+    ])
+
     const handleSelect = ({ key }) => {
       console.log('selected key:', key)
       router.push(key)
@@ -57,7 +124,8 @@ export default defineComponent({
     return {
       selectedKeys,
       openKeys,
-      handleSelect
+      handleSelect,
+      menus
     }
   }
 })
