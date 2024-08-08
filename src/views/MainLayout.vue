@@ -81,32 +81,12 @@ export default defineComponent({
         title: '设备',
         children: [
           {
-            key: 'device-group-online',
-            title: '在线设备',
-            children: [
-              {
-                key: 'device-online1',
-                title: '设备1'
-              },
-              {
-                key: 'device-online2',
-                title: '设备2'
-              }
-            ]
+            key: '/test',
+            title: '在线设备'
           },
           {
-            key: 'device-group-offline',
-            title: '离线设备',
-            children: [
-              {
-                key: 'device-offline1',
-                title: '设备1'
-              },
-              {
-                key: 'device-offline2',
-                title: '设备2'
-              }
-            ]
+            key: '/test/test',
+            title: '离线设备'
           }
         ]
       },

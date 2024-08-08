@@ -38,6 +38,7 @@
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
 import * as echarts from 'echarts'
+import { useRouter, useRoute } from 'vue-router'
 
 // 定义响应式变量
 const selectedChart = ref('cpu')
@@ -46,6 +47,9 @@ const chartData = ref({
   gpu: { used: 0, free: 0 },
   npu: { used: 0, free: 0 }
 })
+
+const router = useRouter()
+const route = useRoute()
 
 const charts = [
   { key: 'cpu', id: 'cpuChart', title: 'CPU Usage' },
@@ -142,6 +146,8 @@ const renderCharts = () => {
 
 // 初次加载数据
 onMounted(() => {
+  console.log(route.query, route)
+
   fetchData()
 })
 </script>
