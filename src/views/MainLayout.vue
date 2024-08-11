@@ -13,12 +13,12 @@
       
       <a-sub-menu key="device" title="设备">
         <a-menu-item-group key="device-group" title="在线设备">
-          <a-menu-item key="device-online1">设备1</a-menu-item>
-          <a-menu-item key="device-online2">设备2</a-menu-item>
+          <a-menu-item key="device-online1">设备 1</a-menu-item>
+          <a-menu-item key="device-online2">设备 2</a-menu-item>
         </a-menu-item-group>
         <a-menu-item-group key="device-group" title="离线设备">
-          <a-menu-item key="device-offline1">设备1</a-menu-item>
-          <a-menu-item key="device-offline2">设备2</a-menu-item>
+          <a-menu-item key="device-offline1">设备 1</a-menu-item>
+          <a-menu-item key="device-offline2">设备 2</a-menu-item>
         </a-menu-item-group>
       </a-sub-menu>
       <a-menu-item key="deploy">部署</a-menu-item> -->
@@ -51,9 +51,10 @@
 </template>
 
 <script>
-import { defineComponent, ref } from 'vue'
+import { defineComponent, ref,onMounted } from 'vue'
 import { Menu } from 'ant-design-vue'
 import { useRouter } from 'vue-router'
+import { DeviceList } from '../api/api';
 
 export default defineComponent({
   components: {
@@ -80,14 +81,6 @@ export default defineComponent({
         key: 'device',
         title: '设备',
         children: [
-          {
-            key: '/test',
-            title: '在线设备'
-          },
-          {
-            key: '/test/test',
-            title: '离线设备'
-          }
         ]
       },
       {
@@ -100,6 +93,17 @@ export default defineComponent({
       console.log('selected key:', key)
       router.push(key)
     }
+
+    onMounted(async()=>{
+      let tmp = await DeviceList()
+      console.log(tmp.data.onlineList);
+      tmp.data.onlineList.forEach(element => {
+        menus.value[2].children.push({
+          key: '/device'+element.id,
+          title: element.name+''+'('+element.ip+')'
+        })
+      });;
+    })
 
     return {
       selectedKeys,

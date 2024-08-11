@@ -1,6 +1,6 @@
 <template>
   <div style="background: #ececec; padding: 30px; height: 100vh">
-    <a-card title="项目管理" :bordered="false" style="width: 100%">
+    <a-card title="部署管理" :bordered="false" style="width: 100%">
       <a-row>
         <a-col :span="12">
           <a-statistic title="总和" :value="deployOverview[0]" />
@@ -125,6 +125,8 @@ onMounted(async () => {
   })
   deployLists.value = tmp.data.list
   pagination.value.total = tmp.data.total
+  deployOverview.value[0]=tmp.data.total
+  deployOverview.value[1]=tmp.data.runningNum
   startExecution()
 })
 
@@ -154,7 +156,7 @@ const startExecution = () => {
 
     if (!fastRequest) {
       clearInterval(timerId)
-      interval = 600000 // 修改间隔为 60 秒
+      interval = 600000 // 修改间隔为 60 min
       timerId = setInterval(executeFunction, interval)
     }
   }
@@ -162,7 +164,7 @@ const startExecution = () => {
   timerId = setInterval(executeFunction, interval)
 }
 
-const deployOverview = [6, 5, 3]
+let deployOverview = ref([6, 5, 3])
 const columns = [
   {
     name: '设备',

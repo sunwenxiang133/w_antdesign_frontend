@@ -1,6 +1,12 @@
 <template>
   <div style="background: #ececec; padding: 30px; height: 100vh">
     <div style="font-size: 30px; font-weight: 600">模型</div>
+    <a-input-search
+      v-model:value="searchText"
+      placeholder="input search text"
+      enter-button
+      @search="onSearch"
+    />
     <div style="margin: 1.5vh 0 5vh">模型管理中心</div>
     <div>
       <a-row :gutter="16">
@@ -91,11 +97,7 @@
       centered
     >
       <div>模型名称</div>
-      <a-input
-        v-model:value="cardInfo.name"
-        placeholder="请输入"
-        allow-clear
-      />
+      <a-input v-model:value="cardInfo.name" placeholder="请输入" allow-clear />
       <br />
       <br />
       <div>模型描述</div>
@@ -160,7 +162,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, watch } from 'vue'
 import { message } from 'ant-design-vue'
 import {
   ModelCreate,
@@ -171,7 +173,22 @@ import {
 } from '../api/api.js'
 import requests from '../api/request.js'
 
+const searchText = ref('')
+watch(searchText, filterCards)
+
 const modelUpdatePanel = ref(false)
+
+const onSearch = () => {
+  filterCards()
+}
+const filterCards = () => {
+  console.log('执行搜索')
+
+  const searchLower = this.searchText.toLowerCase()
+  this.filteredCards = this.cardInfos.filter(card =>
+    card.name.toLowerCase().includes(searchLower)
+  )
+}
 
 const cardInfo = ref({
   id: 23,
@@ -181,13 +198,13 @@ const cardInfo = ref({
 })
 
 const modelUpdateButtonPanelClicked = item => {
-  console.log('测试 111',item.value,item,item.id,item.name)
+  console.log('测试 111', item.value, item, item.id, item.name)
   modelUpdatePanel.value = true
   cardInfo.value.id = item.id
   cardInfo.value.name = item.name
   cardInfo.value.desc = item.desc
   cardInfo.value.fileName = item.fileName
-  console.log('测试 111',item.value,item,item.id,cardInfo.value.name)
+  console.log('测试 111', item.value, item, item.id, cardInfo.value.name)
 }
 
 const modelDeleteClicked = async item => {
@@ -225,7 +242,7 @@ onMounted(async () => {
     pageSize: pageSize.value
   })
   console.log('模型列表获取', tmp.data.total)
-  totalPage.value=tmp.data.total
+  totalPage.value = tmp.data.total
   cardInfos.value = tmp.data.list
 })
 
@@ -256,7 +273,7 @@ const customRequest = async file => {
 // 定义上传处理函数
 const handleUpload = async ({ file, onProgress, onSuccess, onError }) => {
   // 创建二进制数据
-  console.log('erjbvi',file.type);
+  console.log('erjbvi', file.type)
   const binaryData = new Blob([file], { type: file.type })
 
   const config = {
@@ -328,7 +345,7 @@ const createModelButton = async () => {
   })
   console.log('tmp', tmp)
   inputButtonVisible.value = false
- // window.location.reload()
+  // window.location.reload()
 }
 
 const updateModelButton = async () => {
