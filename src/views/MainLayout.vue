@@ -69,19 +69,19 @@ export default defineComponent({
     const router = useRouter()
 
     const menus = ref([
-      {
-        key: 'project',
-        title: '项目'
-      },
-      {
-        key: 'model',
-        title: '模型'
-      },
-      {
+    {
         key: 'device',
         title: '设备',
         children: [
         ]
+    },
+      {
+        key: 'project',
+        title: '应用'
+      },
+      {
+        key: 'model',
+        title: '模型'
       },
       {
         key: 'deploy',
@@ -98,7 +98,7 @@ export default defineComponent({
       let tmp = await DeviceList()
       console.log(tmp.data.onlineList);
       tmp.data.onlineList.forEach(element => {
-        menus.value[2].children.push({
+        menus.value[0].children.push({
           key: '/device'+element.id,
           title: element.name+''+'('+element.ip+')'
         })

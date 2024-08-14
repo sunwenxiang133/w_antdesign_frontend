@@ -15,6 +15,7 @@
       :columns="columns"
       :data-source="deployLists"
       :pagination="pagination"
+      :show-total="total => `一共{pagination.value.total}`"
     >
       <template #headerCell="{ column }">
         <template v-if="column.key === 'deviceName'">
@@ -64,7 +65,12 @@
 <script setup>
 import { progressProps } from 'ant-design-vue/es/progress/props'
 import { message } from 'ant-design-vue'
-import { DeployList, DeployDelete, DeployStop,DeployRestart } from '../api/api.js'
+import {
+  DeployList,
+  DeployDelete,
+  DeployStop,
+  DeployRestart
+} from '../api/api.js'
 import { ref, onMounted } from 'vue'
 
 const deployLists = ref([])
@@ -85,12 +91,44 @@ const deployStopClicked = async id => {
   window.location.reload()
 }
 
-const deployDeleteClicked = async id => {
-  let tmp = DeployDelete({
+const isModalVisible = ref(false)
+
+const handleOk = async () => {
+  isModalVisible.value = false
+  let tmp1 = DeployDelete({
     deployId: id
   })
-  message.info(tmp.data.msg)
-  window.location.reload()
+  message.info(tmp1.data.msg)
+
+  let tmp = await DeployList({
+    pageNum: pagination.value.current,
+    pageSize: pagination.value.pageSize
+  })
+  deployLists.value = tmp.data.list
+  pagination.value.total = tmp.data.total
+  deployOverview.value[0] = tmp.data.total
+  deployOverview.value[1] = tmp.data.runningNum
+}
+
+const handleCancel = () => {
+  isModalVisible.value = false
+}
+
+const deployDeleteClicked = async id => {
+  // let tmp1 = DeployDelete({
+  //   deployId: id
+  // })
+  // message.info(tmp1.data.msg)
+  // let tmp = await DeployList({
+  //   pageNum: pagination.value.current,
+  //   pageSize: pagination.value.pageSize
+  // })
+  // deployLists.value = tmp.data.list
+  // pagination.value.total = tmp.data.total
+  // deployOverview.value[0] = tmp.data.total
+  // deployOverview.value[1] = tmp.data.runningNum
+  //window.location.reload()
+  isModalVisible.value = true
 }
 
 let pagination = ref({
@@ -125,8 +163,8 @@ onMounted(async () => {
   })
   deployLists.value = tmp.data.list
   pagination.value.total = tmp.data.total
-  deployOverview.value[0]=tmp.data.total
-  deployOverview.value[1]=tmp.data.runningNum
+  deployOverview.value[0] = tmp.data.total
+  deployOverview.value[1] = tmp.data.runningNum
   startExecution()
 })
 

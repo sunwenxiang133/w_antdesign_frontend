@@ -67,7 +67,7 @@
                 </div>
               </div>
             </template>
-            <a-btn @click="downloadModel">下载模型</a-btn>
+            <a-btn @click="downloadModel(item.url)">下载模型</a-btn>
             <!-- <template #actions>
               <a-space style="display: flex">
                 <a-button type="primary" block style="flex: 1">按钮 1</a-button>
@@ -86,6 +86,7 @@
       :total="totalPage"
       @change="handlePageChange"
       @show-size-change="handleSizeChange"
+      :show-total="total => `一共{totalPage}`"
     />
 
     <a-modal
@@ -149,6 +150,8 @@
       <a-upload
         :customRequest="handleUpload"
         :before-upload="handleAction"
+        v-model:fileList="fileList"
+        :itemRender="customItemRender"
         :maxCount="1"
         method="PUT"
       >
@@ -157,6 +160,14 @@
           上传
         </a-button>
       </a-upload>
+    </a-modal>
+    <a-modal
+      v-model:open="isModalVisible"
+      title="确定删除吗"
+      @ok="handleOk"
+      @cancel="handleCancel"
+    >
+      <p>点击删除此项</p>
     </a-modal>
   </div>
 </template>
@@ -169,25 +180,54 @@ import {
   PresignUrl,
   ModelList,
   ModelDelete,
-  ModelUpdate
+  ModelUpdate,
+  ModelSearch
 } from '../api/api.js'
 import requests from '../api/request.js'
 
 const searchText = ref('')
-watch(searchText, filterCards)
+
+const handleChange = info => {
+  if (info.file.status === 'done') {
+    // 上传成功后更新文件列表，确保文件状态为 "done"
+    info.fileList = info.fileList.map(file => {
+      if (file.response) {
+        // 例如，你可以设置一个自定义的响应字段来判断上传成功
+        file.url = file.response.url
+      }
+      return file
+    })
+    // 更新 fileList 状态
+    fileList.value = [...info.fileList]
+  }
+}
 
 const modelUpdatePanel = ref(false)
+
+const customItemRender = ({ originNode }) => {
+  // 返回自定义的文件项结构，originNode 是原始的文件项节点
+  // 这里我们移除了 loading 的部分
+  return originNode
+}
 
 const onSearch = () => {
   filterCards()
 }
-const filterCards = () => {
+
+const filteredCards = ref('')
+const filterCards = async () => {
   console.log('执行搜索')
 
-  const searchLower = this.searchText.toLowerCase()
-  this.filteredCards = this.cardInfos.filter(card =>
-    card.name.toLowerCase().includes(searchLower)
-  )
+  let tmp = await ModelSearch({
+    name: searchText.value,
+    pageNum: currentPage.value,
+    pageSize: pageSize.value
+  })
+
+  totalPage.value = tmp.data.total
+  cardInfos.value = tmp.data.list
+
+  console.log('hashasdf', tmp)
 }
 
 const cardInfo = ref({
@@ -207,17 +247,57 @@ const modelUpdateButtonPanelClicked = item => {
   console.log('测试 111', item.value, item, item.id, cardInfo.value.name)
 }
 
-const modelDeleteClicked = async item => {
+const downloadMyUrl = myUrl => {
+  const url = myUrl // 替换为你的文件 URL
+  const a = document.createElement('a')
+  a.href = url
+  a.download = '' // 可以设置文件名，如果留空，将使用原始文件名
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+}
+
+const isModalVisible = ref(false)
+
+const handleOk = async () => {
+  isModalVisible.value = false
   let tmp = await ModelDelete({
     id: item.id
   })
   message.info(tmp.msg)
+
+  let tmp2 = await ModelList({
+    pageNum: currentPage.value,
+    pageSize: pageSize.value
+  })
+  console.log('模型列表获取', tmp2.data.total)
+  totalPage.value = tmp2.data.total
+  cardInfos.value = tmp2.data.list
+}
+
+const handleCancel = () => {
+  isModalVisible.value = false
+}
+
+const modelDeleteClicked = async item => {
+  // let tmp = await ModelDelete({
+  //   id: item.id
+  // })
+  // message.info(tmp.msg)
+  // let tmp2 = await ModelList({
+  //   pageNum: currentPage.value,
+  //   pageSize: pageSize.value
+  // })
+  // console.log('模型列表获取', tmp2.data.total)
+  // totalPage.value = tmp2.data.total
+  // cardInfos.value = tmp2.data.list
   //window.location.reload()
+  isModalVisible.value = true
 }
 
 const currentPage = ref(1)
 const totalPage = ref(20)
-const pageSizeOptions = ref(['10', '20', '30', '40'])
+const pageSizeOptions = ref(['2', '5', '8'])
 const pageSize = ref(5)
 const handlePageChange = async page => {
   console.log('当前页：', page)
@@ -246,17 +326,18 @@ onMounted(async () => {
   cardInfos.value = tmp.data.list
 })
 
-const downloadModel = () => {
+const downloadModel = url => {
   console.log('下载模型')
+  downloadMyUrl(url)
 }
 
 const uploadFileList = ref()
 
-const handleChange = ({ file, fileList }) => {
-  console.log('###handleChange', file, fileList, file.name)
-  uploadFileList.value = file.name
-  console.log('123', uploadFileList.value)
-}
+// const handleChange = ({ file, fileList }) => {
+//   console.log('###handleChange', file, fileList, file.name)
+//   uploadFileList.value = file.name
+//   console.log('123', uploadFileList.value)
+// }
 
 const handleAction1 = async file => {
   await setTimeout(handleAction, 1000)
@@ -309,6 +390,26 @@ const handleUpload = async ({ file, onProgress, onSuccess, onError }) => {
 
 const uploadUrlForAction = ref('')
 
+const handleFileName = fileName => {
+  console.log('asdfhasdfhasdflh')
+
+  // 生成一个随机数（例如 0-999 之间的整数）
+  let randomNumber = Math.floor(Math.random() * 1000)
+
+  // 查找最后一个点的位置
+  let lastDotPosition = fileName.lastIndexOf('.')
+
+  // 如果找到了点，将随机数插入文件名中
+  if (lastDotPosition !== -1) {
+    let nameWithoutExtension = fileName.substring(0, lastDotPosition)
+    let extension = fileName.substring(lastDotPosition)
+    return `${nameWithoutExtension}${randomNumber}${extension}`
+  }
+
+  // 如果没有点，直接在末尾添加随机数
+  return `${fileName}${randomNumber}`
+}
+
 const handleAction = async file => {
   // // 定义要执行的函数
   // function doSomething() {
@@ -317,7 +418,10 @@ const handleAction = async file => {
 
   // // 使用 setTimeout 等待 5 秒（5000 毫秒）
   // setTimeout(doSomething, 1000)
-  let tmpFileName = file.name + Math.ceil(Math.random() * 10000)
+  //let tmpFileName = file.name + Math.ceil(Math.random() * 10000)
+
+  let tmpFileName = handleFileName(file.name)
+
   try {
     const data = await PresignUrl({
       // modelName: createModelInfo.name,
@@ -346,6 +450,18 @@ const createModelButton = async () => {
   console.log('tmp', tmp)
   inputButtonVisible.value = false
   // window.location.reload()
+
+  let tmp2 = await ModelList({
+    pageNum: currentPage.value,
+    pageSize: pageSize.value
+  })
+  console.log('模型列表获取', tmp2.data.total)
+  totalPage.value = tmp2.data.total
+  cardInfos.value = tmp2.data.list
+
+  cardInfo.value.name = ''
+  cardInfo.value.desc = ''
+  fileList.value = []
 }
 
 const updateModelButton = async () => {
@@ -356,8 +472,25 @@ const updateModelButton = async () => {
     fileName: cardInfo.value.fileName
   })
   modelUpdatePanel.value = false
+
+  message.info(tmp.msg)
+
+  let tmp2 = await ModelList({
+    pageNum: currentPage.value,
+    pageSize: pageSize.value
+  })
+  console.log('模型列表获取', tmp2.data.total)
+  totalPage.value = tmp2.data.total
+  cardInfos.value = tmp2.data.list
+
+  // cardInfo.name=''
+  // cardInfo.desc=''
+  // fileList.value=[]
+
   // window.location.reload()
 }
+
+const fileList = ref([])
 
 const createModelInfo = reactive({
   name: '',
@@ -370,6 +503,8 @@ const inputButtonVisible = ref(false)
 const setModalVisible = () => {
   inputButtonVisible.value = true
 }
+
+watch(searchText, filterCards)
 </script>
 
 <style scoped>
@@ -385,4 +520,23 @@ const setModalVisible = () => {
   > li {
   margin: 0 !important;
 } */
+
+body
+  > div:nth-child(4)
+  > div
+  > div.ant-modal-wrap.ant-modal-centered
+  > div
+  > div.ant-modal-content
+  > div.ant-modal-body
+  > span.ant-upload-wrapper.css-dev-only-do-not-override-19iuou
+  > div.ant-upload-list.ant-upload-list-text
+  > div
+  > div
+  > div.ant-upload-text-icon {
+  display: none;
+}
+
+.ant-upload-text-icon {
+  display: none !important;
+}
 </style>

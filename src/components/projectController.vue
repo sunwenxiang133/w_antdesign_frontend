@@ -1,20 +1,20 @@
 <template>
   <div style="background: #ececec; padding: 30px; height: 100vh">
-    <a-card title="项目管理" :bordered="false" style="width: 100%">
+    <a-card title="应用管理" :bordered="false" style="width: 100%">
       <a-row>
         <a-col :span="8">
-          <a-statistic title="我的项目" :value="totalPage" />
+          <a-statistic title="我的应用" :value="totalPage" />
         </a-col>
         <a-col :span="8">
-          <a-statistic title="已部署项目" :value="projectOverview[1]" />
+          <a-statistic title="已部署" :value="projectOverview[1]" />
         </a-col>
         <a-col :span="8">
-          <a-statistic title="待部署项目" :value="projectOverview[2]" />
+          <a-statistic title="待部署应用" :value="projectOverview[2]" />
         </a-col>
       </a-row>
     </a-card>
     <a-card
-      title="项目列表"
+      title="应用列表"
       :bordered="false"
       style="width: 100%; margin-top: 3vh"
     >
@@ -22,14 +22,22 @@
         <div style="display: flex">
           <div>
             <a-radio-group v-model:value="chooseProject">
-              <a-radio-button value="a" @click="getAllProjectButtonClicked">全部</a-radio-button>
-              <a-radio-button value="b" @click="getDeployedProjectButtonClicked">已部署</a-radio-button>
-              <a-radio-button value="c" @click="getUnDeployedProjectedButtonClicked">未部署</a-radio-button>
+              <a-radio-button value="a" @click="getAllProjectButtonClicked"
+                >全部</a-radio-button
+              >
+              <a-radio-button value="b" @click="getDeployedProjectButtonClicked"
+                >已部署</a-radio-button
+              >
+              <a-radio-button
+                value="c"
+                @click="getUnDeployedProjectedButtonClicked"
+                >未部署</a-radio-button
+              >
             </a-radio-group>
           </div>
           <div>
             <a-input-search
-              v-model:value="value"
+              v-model:value="searchValue"
               placeholder="请输入"
               style="width: 200px; margin-left: 1vw"
               @search="onSearch"
@@ -48,13 +56,13 @@
         "
       >
         <!-- <a-col :span="8">
-            <a-statistic title="我的项目" :value="projectOverview[0]"  />
+            <a-statistic title="我的应用" :value="projectOverview[0]"  />
         </a-col>
         <a-col :span="8">
-            <a-statistic title="已部署项目" :value="projectOverview[1]" />
+            <a-statistic title="已部署应用" :value="projectOverview[1]" />
         </a-col>
         <a-col :span="8">
-            <a-statistic title="待部署项目" :value="projectOverview[2]" />
+            <a-statistic title="待部署应用" :value="projectOverview[2]" />
         </a-col> -->
         <div style="display: flex; padding: 3px 0; align-items: center">
           <a-avatar
@@ -97,6 +105,7 @@
           :total="totalPage"
           @change="handlePageChange"
           @show-size-change="handleSizeChange"
+          :show-total="total => `一共{totalPage}`"
         />
       </a-row>
     </a-card>
@@ -160,12 +169,12 @@
     <a-modal
       v-model:open="addProjectButtonVisible"
       @ok="createProjectButton"
-      title="项目添加"
+      title="应用添加"
       centered
       ok-text="确认"
       cancel-text="取消"
     >
-      <div>项目名称</div>
+      <div>应用名称</div>
       <a-input
         v-model:value="createProjectInfo.name"
         placeholder="请输入"
@@ -190,7 +199,7 @@
 
       <br />
       <br />
-      <div>项目描述</div>
+      <div>应用描述</div>
       <a-textarea
         v-model:value="createProjectInfo.desc"
         placeholder="请输入至少五个字符"
@@ -200,6 +209,7 @@
       <a-upload
         :customRequest="handleUpload"
         :before-upload="handleAction"
+        v-model:fileList="fileList"
         :maxCount="1"
         method="PUT"
       >
@@ -213,12 +223,12 @@
     <a-modal
       v-model:open="projectUpdatePanel"
       @ok="projectUpdateOkButton"
-      title="项目添加"
+      title="应用添加"
       centered
       ok-text="确认"
       cancel-text="取消"
     >
-      <div>项目名称</div>
+      <div>应用名称</div>
       <a-input
         v-model:value="createProjectInfo.name"
         placeholder="请输入"
@@ -243,7 +253,7 @@
 
       <br />
       <br />
-      <div>项目描述</div>
+      <div>应用描述</div>
       <a-textarea
         v-model:value="createProjectInfo.desc"
         placeholder="请输入至少五个字符"
@@ -260,16 +270,24 @@
     <!-- <a-button @click="test1">123123</a-button> -->
     <!-- <a-button @click="test2">部署任务创建</a-button>
     <a-button>部署任务添加</a-button>
-    <a-button @click="ProjectCreateButton">项目添加</a-button>
+    <a-button @click="ProjectCreateButton">应用添加</a-button>
     <a-button @click="ModelCreateButton">模型创建</a-button>
     <a-button @click="PresignUrlButton">预签名 Url</a-button>
-    <a-button @click="PresignedUrlButton">项目预签名 Url</a-button>
+    <a-button @click="PresignedUrlButton">应用预签名 Url</a-button>
     <a-button @click="DeployStatusButton">模型部署状态</a-button> -->
+    <a-modal
+      v-model:open="isModalVisible"
+      title="确定删除吗"
+      @ok="handleOk"
+      @cancel="handleCancel"
+    >
+      <p>点击删除此项</p>
+    </a-modal>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, reactive } from 'vue'
+import { ref, onMounted, reactive, h, watch } from 'vue'
 import { message } from 'ant-design-vue'
 import {
   testApiParams,
@@ -285,14 +303,73 @@ import {
   ProjectListReq,
   ModelList,
   ProjectDelete,
-  ProjectUpdate
+  ProjectUpdate,
+  ProjectListSearch
 } from '../api/api.js'
 import requests from '../api/request.js'
 
+const isModalVisible = ref(false)
+
+const handleOk = async () => {
+  isModalVisible.value = false
+
+  let tmp1 = await ProjectDelete({ id: id })
+  message.info(tmp1.msg)
+  //window.location.reload()
+  let tmp = await ProjectListReq({
+    pageNum: currentPage.value,
+    pageSize: pageSize.value,
+    status: -1
+  })
+  totalPage.value = tmp.data.total
+  console.log('DeviceList 为', tmp)
+  projectOverview.value[0] = tmp.data.total
+  projectList.value = tmp.data.list
+  projectListDisplay.value = tmp.data.list
+  projectOverview.value[1] = tmp.data.deployed
+  projectOverview.value[2] = tmp.data.total - tmp.data.deployed
+}
+
+const handleCancel = () => {
+  isModalVisible.value = false
+}
+
 const deleteProjectClicked = async id => {
-  let tmp = await ProjectDelete({ id: id })
-  message.info(tmp.msg)
-  window.location.reload()
+  // let tmp1 = await ProjectDelete({ id: id })
+  // message.info(tmp1.msg)
+  // //window.location.reload()
+  // let tmp = await ProjectListReq({
+  //   pageNum: currentPage.value,
+  //   pageSize: pageSize.value,
+  //   status: -1
+  // })
+  // totalPage.value = tmp.data.total
+  // console.log('DeviceList 为', tmp)
+  // projectOverview.value[0] = tmp.data.total
+  // projectList.value = tmp.data.list
+  // projectListDisplay.value = tmp.data.list
+  // projectOverview.value[1] = tmp.data.deployed
+  // projectOverview.value[2] = tmp.data.total - tmp.data.deployed
+  isModalVisible.value = true
+}
+
+const projectStatus = ref(-1)
+
+const searchFilter = async () => {
+  console.log('搜')
+  let tmp = await ProjectListSearch({
+    pageNum: currentPage.value,
+    pageSize: pageSize.value,
+    status: projectStatus.value,
+    search: searchValue.value
+  })
+  //totalPage.value = tmp.data.total
+  console.log('DeviceList 为', tmp)
+  // projectOverview.value[0] = tmp.data.total
+  projectList.value = tmp.data.list
+  projectListDisplay.value = tmp.data.list
+  // projectOverview.value[1]=tmp.data.deployed;
+  // projectOverview.value[2]=tmp.data.total-tmp.data.deployed;
 }
 
 const projectUpdateOkButton = async () => {
@@ -305,7 +382,9 @@ const projectUpdateOkButton = async () => {
   })
 }
 
-const deployProjectButtonClicked=()=>{
+const searchValue = ref('')
+
+const deployProjectButtonClicked = () => {
   addProjectButtonVisible.value = !addProjectButtonVisible.value
   deployButton()
 }
@@ -373,19 +452,45 @@ const createProjectButton = async () => {
     name: createProjectInfo.name,
     desc: createProjectInfo.desc,
     fileName: createProjectInfo.modelFileName,
-    modelId:tmpModelId
+    modelId: tmpModelId
   })
   inputButtonVisible.value = false
+
+  let tmp3 = await ProjectListReq({
+    pageNum: currentPage.value,
+    pageSize: pageSize.value,
+    status: -1
+  })
+  totalPage.value = tmp3.data.total
+  console.log('DeviceList 为', tmp3)
+  projectOverview.value[0] = tmp3.data.total
+  projectList.value = tmp3.data.list
+  projectListDisplay.value = tmp3.data.list
+  projectOverview.value[1] = tmp3.data.deployed
+  projectOverview.value[2] = tmp3.data.total - tmp3.data.deployed
+  addProjectButtonVisible.value = false
+
+  createProjectInfo.desc = ''
+  selectedItem.value = ''
+  createProjectInfo.name = ''
+  fileList.value = []
   // window.location.reload()
 }
 
+const fileList = ref([])
 const deployProjectClicked = async () => {
   inputButtonVisible.value = !inputButtonVisible.value
   console.log('test', tmpDeviceLists.value)
   let tmpDeviceId
   let tmpModelId
   tmpDeviceLists.value.forEach(item => {
-    console.log('#######ceshi', item,item.name,selectedDeviceItem.value,selectedItem.value)
+    console.log(
+      '#######ceshi',
+      item,
+      item.name,
+      selectedDeviceItem.value,
+      selectedItem.value
+    )
     if (item.name === selectedDeviceItem.value) {
       console.log('终于', item.id)
       tmpDeviceId = item.id
@@ -397,8 +502,8 @@ const deployProjectClicked = async () => {
       console.log('终于 Model', tmpModelId)
     }
   })
-  if(selectedDeviceItem.value==='自动'){
-    tmpDeviceId=0
+  if (selectedDeviceItem.value === '自动') {
+    tmpDeviceId = 0
   }
   let tmp = await DeployCreate({
     deviceId: tmpDeviceId,
@@ -413,8 +518,6 @@ const tmpDeviceNames = ref([])
 const selectedItemId = ref()
 const tmpModelLists = ref([])
 const tmpDeviceLists = ref([])
-
-
 
 const deployButton = async itemId => {
   // selectedItemId.value = itemId
@@ -445,7 +548,7 @@ const deployButton = async itemId => {
   tmpDeviceList.forEach(item => {
     tmpDeviceName.push(item.name)
   })
-  
+
   filteredDeviceData.value = [...tmpDeviceName]
   tmpDeviceNames.value = [...tmpDeviceName]
 
@@ -478,16 +581,15 @@ const realDeployButton = async itemId => {
   let tmpDeviceList = tmp2.data.onlineList
   tmpDeviceLists.value = tmpDeviceList
 
-  console.log('ceshi1111',tmpDeviceList);
-  
-  
-  selectedDeviceItem.value='自动'
+  console.log('ceshi1111', tmpDeviceList)
+
+  selectedDeviceItem.value = '自动'
 
   tmpDeviceList.forEach(item => {
     tmpDeviceName.push(item.name)
   })
 
-  console.log('#######123',tmpDeviceName);
+  console.log('#######123', tmpDeviceName)
   tmpDeviceName.unshift('自动')
 
   filteredDeviceData.value = [...tmpDeviceName]
@@ -510,6 +612,27 @@ const DeployStatusButton = async () => {
 }
 
 const uploadUrlForAction = ref('')
+
+const handleFileName = fileName => {
+  console.log('asdfhasdfhasdflh')
+
+  // 生成一个随机数（例如 0-999 之间的整数）
+  let randomNumber = Math.floor(Math.random() * 1000)
+
+  // 查找最后一个点的位置
+  let lastDotPosition = fileName.lastIndexOf('.')
+
+  // 如果找到了点，将随机数插入文件名中
+  if (lastDotPosition !== -1) {
+    let nameWithoutExtension = fileName.substring(0, lastDotPosition)
+    let extension = fileName.substring(lastDotPosition)
+    return `${nameWithoutExtension}${randomNumber}${extension}`
+  }
+
+  // 如果没有点，直接在末尾添加随机数
+  return `${fileName}${randomNumber}`
+}
+
 const handleAction = async file => {
   // // 定义要执行的函数
   // function doSomething() {
@@ -518,31 +641,29 @@ const handleAction = async file => {
 
   // // 使用 setTimeout 等待 5 秒（5000 毫秒）
   // setTimeout(doSomething, 1000)
-  let tmpFileName = file.name + Math.ceil(Math.random() * 10000)
-  try {
-    const data = await PresignUrl({
-      modelName: createProjectInfo.name,
-      fileName: tmpFileName
-    })
-    createProjectInfo.modelFileName = tmpFileName
-    console.log(
-      '###执行了 handleAction',
-      data.data.url,
-      createProjectInfo.modelFileName
-    )
-    uploadUrlForAction.value = data.data.url
-    return data.presignedUrl
-  } catch (error) {
-    console.log(error)
-    throw error
-  }
+  //let tmpFileName = file.name + Math.ceil(Math.random() * 10000)
+  let tmpFileName = handleFileName(file.name)
+  console.log('123123123', tmpFileName)
+
+  const data = await PresignUrl({
+    modelName: createProjectInfo.name,
+    fileName: tmpFileName
+  })
+  createProjectInfo.modelFileName = tmpFileName
+  console.log(
+    '###执行了 handleAction',
+    data.data.url,
+    createProjectInfo.modelFileName
+  )
+  uploadUrlForAction.value = data.data.url
+  return data.presignedUrl
 }
 
 // 定义上传处理函数
 const handleUpload = async ({ file, onProgress, onSuccess, onError }) => {
   // 创建二进制数据
-  console.log('erjbvi',file.type);
-  
+  console.log('erjbvi', file.type)
+
   const binaryData = new Blob([file], { type: file.type })
 
   const config = {
@@ -625,45 +746,51 @@ onMounted(async () => {
   let tmp = await ProjectListReq({
     pageNum: currentPage.value,
     pageSize: pageSize.value,
-    status:-1
+    status: -1
   })
   totalPage.value = tmp.data.total
   console.log('DeviceList 为', tmp)
   projectOverview.value[0] = tmp.data.total
   projectList.value = tmp.data.list
   projectListDisplay.value = tmp.data.list
-  projectOverview.value[1]=tmp.data.deployed;
-  projectOverview.value[2]=tmp.data.total-tmp.data.deployed;
+  projectOverview.value[1] = tmp.data.deployed
+  projectOverview.value[2] = tmp.data.total - tmp.data.deployed
 })
 
-const getAllProjectButtonClicked=async()=>{
-  let tmp = await ProjectListReq({
-    pageNum: currentPage.value,
-    pageSize: pageSize.value,
-    status:-1
-  })
-  projectList.value=tmp.data.list
-  totalPage.value = tmp.data.total
+const getAllProjectButtonClicked = async () => {
+  // let tmp = await ProjectListReq({
+  //   pageNum: currentPage.value,
+  //   pageSize: pageSize.value,
+  //   status:-1
+  // })
+  // projectList.value=tmp.data.list
+  // totalPage.value = tmp.data.total
+  projectStatus.value = -1
+  searchFilter()
 }
 
-const getDeployedProjectButtonClicked=async()=>{
-  let tmp = await ProjectListReq({
-    pageNum: currentPage.value,
-    pageSize: pageSize.value,
-    status:1
-  })
-  projectList.value=tmp.data.list
-  totalPage.value = tmp.data.total
+const getDeployedProjectButtonClicked = async () => {
+  // let tmp = await ProjectListReq({
+  //   pageNum: currentPage.value,
+  //   pageSize: pageSize.value,
+  //   status:1
+  // })
+  // projectList.value=tmp.data.list
+  // totalPage.value = tmp.data.total
+  projectStatus.value = 1
+  searchFilter()
 }
 
-const getUnDeployedProjectedButtonClicked=async()=>{
-  let tmp = await ProjectListReq({
-    pageNum: currentPage.value,
-    pageSize: pageSize.value,
-    status:0
-  })
-  projectList.value=tmp.data.list
-  totalPage.value = tmp.data.total
+const getUnDeployedProjectedButtonClicked = async () => {
+  // let tmp = await ProjectListReq({
+  //   pageNum: currentPage.value,
+  //   pageSize: pageSize.value,
+  //   status:0
+  // })
+  // projectList.value=tmp.data.list
+  // totalPage.value = tmp.data.total
+  projectStatus.value = 0
+  searchFilter()
 }
 
 const getRealDataPanel = () => {}
@@ -678,7 +805,7 @@ const handleChange = info => {
     message.error(`${info.file.name} file upload failed.`)
   }
 }
-const fileList = ref([])
+//const fileList = ref([])
 const headers = {
   authorization: 'authorization-text'
 }
@@ -748,6 +875,8 @@ const onDeviceSearch = value => {
     item.includes(value)
   )
 }
+
+watch(searchValue, searchFilter)
 </script>
 
 <style lang="scss" scoped></style>

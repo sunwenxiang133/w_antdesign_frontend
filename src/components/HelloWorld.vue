@@ -1,11 +1,20 @@
 <template>
   <a-layout style="height: 100vh">
     <a-card
-      :title="allData.name"
       :bordered="false"
       style="width: 100%; padding: 30px; background-color: #e0e0e0"
     >
-      <a-row>
+      <div v-if="!isEditing">
+        <span @click="isEditing = true">{{ allData.name }}</span>
+      </div>
+      <div v-else>
+        <a-input
+          v-model="allData.name"
+          @blur="isEditing = false"
+          @pressEnter="isEditing = false"
+        />
+      </div>
+      <a-row :gutter="[16, 16]">
         <a-col :span="8">
           <a-statistic title="设备类型" :value="allData.deviceType" />
         </a-col>
@@ -14,6 +23,12 @@
         </a-col>
         <a-col :span="8">
           <a-statistic title="执行中任务" :value="allData.runningTask" />
+        </a-col>
+        <a-col :span="8">
+          <a-statistic title="内存占用" :value="memoryData.value[0].value" />
+        </a-col>
+        <a-col :span="8">
+          <a-statistic title="剩余内存" :value="memoryData.value[1].value" />
         </a-col>
       </a-row>
     </a-card>
@@ -25,6 +40,7 @@
         :key="chart.key"
         style="flex: 1 1 300px; min-width: 300px"
       >
+        {{ chart.id }}
         <div :id="chart.id" style="width: 100%; height: 400px"></div>
       </div>
     </a-layout-content>
@@ -33,6 +49,7 @@
       :columns="columns"
       :data-source="deployLists"
       :pagination="pagination"
+      :show-total="total => `一共{pagination.value.total}`"
     >
       <template #headerCell="{ column }">
         <template v-if="column.key === 'deviceName'">
@@ -76,6 +93,14 @@
         </template>
       </template>
     </a-table>
+    <a-modal
+      v-model:open="isModalVisible"
+      title="确定删除吗"
+      @ok="handleOk"
+      @cancel="handleCancel"
+    >
+      <p>点击删除此项</p>
+    </a-modal>
   </a-layout>
 </template>
 
@@ -88,6 +113,8 @@ import { DeviceList, DeployListDevice } from '../api/api'
 import { useAllStore } from '../store/allStore.js'
 
 const allStore = useAllStore()
+
+const isEditing = ref(false)
 
 // 定义响应式变量
 const selectedChart = ref('cpu')
@@ -174,13 +201,11 @@ const router = useRouter()
 const route = useRoute()
 
 const charts = [
-  { key: 'deviceName', id: 'deviceName', title: '设备名称' },
-  { key: 'deviceType', id: 'deviceType', title: '设备类型' },
-  { key: 'projectName', id: 'projectName', title: '项目名称' },
-  { key: 'modelName', id: 'modelName', title: '模型名称' },
-  { key: 'deployAt', id: 'deployAt', title: '部署时间' },
-  { key: 'status', id: 'status', title: '状态' },
-  { key: 'progress', id: 'progress', title: '进度' }
+  { key: 'cpu', id: 'cpuChart', title: 'CPU Usage' },
+  { key: 'gpu', id: 'gpuChart', title: 'GPU Usage' },
+  { key: 'npu', id: 'npuChart', title: 'NPU Usage' },
+  // { key: 'memory', id: 'memory', title: 'Memory Usage' },
+  { key: 'network', id: 'network', title: 'Network Usage' }
 ]
 
 const deviceType = ref('')
@@ -208,7 +233,7 @@ const fetchData = async () => {
         chartData.value.npu = element.npu
         allData.value.ip = element.ip
         memoryData.value[0].value = element.memoryUsed
-        memoryData.value[1].value = element.value - element.memoryUsed
+        memoryData.value[1].value = element.memoryTotal - element.memoryUsed
         let tmp = [...networkUploadData.value]
         tmp.push(element.networkUpload)
         tmp.shift()
@@ -250,6 +275,7 @@ const allData = ref({
 // 渲染图表函数
 const renderCharts = () => {
   charts.forEach(chart => {
+    console.log('testtest', chart.id)
     if (deviceType.value === 'jetson') {
       if (chart.key === 'npu') {
         return
@@ -341,7 +367,10 @@ const renderCharts = () => {
           name: 'Access From',
           type: 'pie',
           radius: '50%',
-          data: memoryData.value,
+          data: [
+            { value: memoryData.value[0].value, name: 'Memory Used' },
+            { value: memoryData.value[1].value, name: 'Memory Free' }
+          ],
           emphasis: {
             itemStyle: {
               shadowBlur: 10,
@@ -359,7 +388,15 @@ const renderCharts = () => {
       },
       xAxis: {
         type: 'category',
-        data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+        data: [
+          getCurrentTime() - 6,
+          getCurrentTime() - 5,
+          getCurrentTime() - 4,
+          getCurrentTime() - 3,
+          getCurrentTime() - 2,
+          getCurrentTime() - 1,
+          getCurrentTime()
+        ]
       },
       yAxis: {
         type: 'value'
@@ -368,14 +405,14 @@ const renderCharts = () => {
         {
           name: 'networkUpload',
           type: 'line',
-          stack: 'Total',
+          //stack: 'Total',
           data: networkUploadData.value
         },
         {
-          name: 'Union Ads',
+          name: 'networkDownload',
           type: 'line',
-          stack: 'Total',
-          data: [220, 182, 191, 234, 290, 330, 310]
+          //stack: 'Total',
+          data: networkDownloadData.value
         }
       ]
     }
@@ -394,6 +431,15 @@ const renderCharts = () => {
 
 let fastRequest = true
 
+const getCurrentTime = () => {
+  let currentDateTime = new Date()
+  let hours = currentDateTime.getHours().toString().padStart(2, '0')
+  let minutes = currentDateTime.getMinutes().toString().padStart(2, '0')
+  let seconds = currentDateTime.getSeconds().toString().padStart(2, '0')
+
+  return `${hours}:${minutes}:${seconds}`
+}
+
 const startExecution = () => {
   let interval = 1000
   let timerId
@@ -401,7 +447,7 @@ const startExecution = () => {
   const executeFunction = async () => {
     let tmp = await DeviceList()
 
-    if (route.path !== allStore.saveCurrentUrl) {
+    if (route.path !== allStore.currentUrl) {
       fastRequest = false
     }
 
@@ -439,16 +485,19 @@ const startExecution = () => {
 
 // 初次加载数据
 onMounted(async () => {
+  console.log('123', route.path)
+
   let tmp = await DeployListDevice({
     pageNum: pagination.value.current,
-    pageSize: pagination.value.pageSize
+    pageSize: pagination.value.pageSize,
+    deviceId: Number(route.path.slice(7))
   })
   pagination.value.total = tmp.data.total
   deployLists.value = tmp.data.list
   console.log(route, route.path)
   allStore.saveCurrentUrl(route.path)
   fetchData()
-  // NOTE: 停止执行请求可以通过检测当前的url啊
+  // NOTE: 停止执行请求可以通过检测当前的 url 啊
   startExecution()
 })
 </script>

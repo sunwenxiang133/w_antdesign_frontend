@@ -8,3 +8,10 @@ const router = useRouter()
 </template>
 
 
+
+<style scoped>
+.ant-upload-text-icon{
+  display: none !important;
+}
+</style>
+
