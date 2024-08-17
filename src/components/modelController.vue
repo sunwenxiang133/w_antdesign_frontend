@@ -47,27 +47,21 @@
         >
           <a-card :title="item.name" hoverable>
             <p>{{ item.desc }}</p>
+            <p>{{ item.id }}</p>
             <template #actions>
-              <div
+              <!-- <div
                 style="
                   display: flex;
                   padding: 0 !important;
                   margin: 0 !important;
                   height: 100%;
                 "
-              >
-                <div
-                  style="flex: 1"
-                  @click="modelUpdateButtonPanelClicked(item)"
-                >
-                  编辑
-                </div>
-                <div style="flex: 1" @click="modelDeleteClicked(item)">
-                  删除
-                </div>
-              </div>
+              > -->
+              <div @click="modelUpdateButtonPanelClicked(item)">编辑</div>
+              <div @click="modelDeleteClicked(item)">删除</div>
+              <!-- </div> -->
+              <div @click="downloadModel(item.url)">下载模型</div>
             </template>
-            <a-btn @click="downloadModel(item.url)">下载模型</a-btn>
             <!-- <template #actions>
               <a-space style="display: flex">
                 <a-button type="primary" block style="flex: 1">按钮 1</a-button>
@@ -86,7 +80,7 @@
       :total="totalPage"
       @change="handlePageChange"
       @show-size-change="handleSizeChange"
-      :show-total="total => `一共{totalPage}`"
+      :show-total="total => `一共${totalPage}`"
     />
 
     <a-modal
@@ -410,6 +404,7 @@ const handleFileName = fileName => {
   return `${fileName}${randomNumber}`
 }
 
+const tmpFileNameUrl = ref('')
 const handleAction = async file => {
   // // 定义要执行的函数
   // function doSomething() {
@@ -431,8 +426,10 @@ const handleAction = async file => {
     console.log(
       '###执行了 handleAction',
       data.data.url,
+      data.data.name,
       createModelInfo.modelFileName
     )
+    tmpFileNameUrl.value = data.data.name
     uploadUrlForAction.value = data.data.url
     return data.presignedUrl
   } catch (error) {
@@ -445,7 +442,7 @@ const createModelButton = async () => {
   let tmp = await ModelCreate({
     name: createModelInfo.name,
     desc: createModelInfo.desc,
-    fileName: createModelInfo.modelFileName
+    fileName: tmpFileNameUrl.value
   })
   console.log('tmp', tmp)
   inputButtonVisible.value = false

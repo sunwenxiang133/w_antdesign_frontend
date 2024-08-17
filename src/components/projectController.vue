@@ -105,7 +105,7 @@
           :total="totalPage"
           @change="handlePageChange"
           @show-size-change="handleSizeChange"
-          :show-total="total => `一共{totalPage}`"
+          :show-total="total => `一共 ${ totalPage } 项`"
         />
       </a-row>
     </a-card>
@@ -309,11 +309,11 @@ import {
 import requests from '../api/request.js'
 
 const isModalVisible = ref(false)
-
+const deleteId=ref(0);
 const handleOk = async () => {
   isModalVisible.value = false
 
-  let tmp1 = await ProjectDelete({ id: id })
+let tmp1 = await ProjectDelete({ id: deleteId.value })
   message.info(tmp1.msg)
   //window.location.reload()
   let tmp = await ProjectListReq({
@@ -350,9 +350,11 @@ const deleteProjectClicked = async id => {
   // projectListDisplay.value = tmp.data.list
   // projectOverview.value[1] = tmp.data.deployed
   // projectOverview.value[2] = tmp.data.total - tmp.data.deployed
+  deleteId.value=id;
   isModalVisible.value = true
 }
 
+const tmpFileNameUrl=ref('')
 const projectStatus = ref(-1)
 
 const searchFilter = async () => {
@@ -451,7 +453,7 @@ const createProjectButton = async () => {
   let tmp2 = await ProjectCreate({
     name: createProjectInfo.name,
     desc: createProjectInfo.desc,
-    fileName: createProjectInfo.modelFileName,
+    fileName: tmpFileNameUrl.value,
     modelId: tmpModelId
   })
   inputButtonVisible.value = false
@@ -656,6 +658,7 @@ const handleAction = async file => {
     createProjectInfo.modelFileName
   )
   uploadUrlForAction.value = data.data.url
+  tmpFileNameUrl.value=data.data.name
   return data.presignedUrl
 }
 

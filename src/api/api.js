@@ -68,3 +68,6 @@ export const ProjectCreate = data => requests.post('/v1/project/create', data)
 
 // 模型搜索
 export const ModelSearch=data=>requests.post('/v1/model/listByName',data)
+
+// 更改设备名称
+export const DeviceUpdate=data=>requests.post('/v1/device/update',data)

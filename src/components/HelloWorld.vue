@@ -4,16 +4,18 @@
       :bordered="false"
       style="width: 100%; padding: 30px; background-color: #e0e0e0"
     >
-      <div v-if="!isEditing">
-        <span @click="isEditing = true">{{ allData.name }}</span>
+      <div v-if="!isEditing" style="display: flex;align-items: center;flex-direction: row;">
+        <span  style="font-size: 24px;margin-right: 5px;">{{ tmpName }}</span>
+        <EditOutlined @click="isEditing = true" style="font-size:  16px"/>
       </div>
       <div v-else>
         <a-input
-          v-model="allData.name"
-          @blur="isEditing = false"
-          @pressEnter="isEditing = false"
+        v-model:value="tmpName"
+        @blur="handleBlur()"
+        @pressEnter="HandleDeviceUpdate(tmpName)"
         />
       </div>
+      
       <a-row :gutter="[16, 16]">
         <a-col :span="8">
           <a-statistic title="设备类型" :value="allData.deviceType" />
@@ -25,10 +27,10 @@
           <a-statistic title="执行中任务" :value="allData.runningTask" />
         </a-col>
         <a-col :span="8">
-          <a-statistic title="内存占用" :value="memoryData.value[0].value" />
+          <a-statistic title="内存占用" :value="memoryData[0].value" />
         </a-col>
         <a-col :span="8">
-          <a-statistic title="剩余内存" :value="memoryData.value[1].value" />
+          <a-statistic title="剩余内存" :value="memoryData[1].value" />
         </a-col>
       </a-row>
     </a-card>
@@ -43,13 +45,16 @@
         {{ chart.id }}
         <div :id="chart.id" style="width: 100%; height: 400px"></div>
       </div>
+      <div key="network" style="flex: 1 1 100%; min-width: 300px">
+        <div id="network" style="width: 100%; height: 400px"></div>
+      </div>
     </a-layout-content>
     <a-table
       style="margin-top: 2vh"
       :columns="columns"
       :data-source="deployLists"
       :pagination="pagination"
-      :show-total="total => `一共{pagination.value.total}`"
+      :show-total="total => `一共${pagination.value.total}`"
     >
       <template #headerCell="{ column }">
         <template v-if="column.key === 'deviceName'">
@@ -109,8 +114,10 @@ import { ref, onMounted } from 'vue'
 import axios from 'axios'
 import * as echarts from 'echarts'
 import { useRouter, useRoute } from 'vue-router'
-import { DeviceList, DeployListDevice } from '../api/api'
+import { DeviceList, DeployListDevice,DeviceUpdate } from '../api/api'
 import { useAllStore } from '../store/allStore.js'
+import { EditOutlined } from '@ant-design/icons-vue';
+// import { log } from 'echarts/types/src/util/log.js'
 
 const allStore = useAllStore()
 
@@ -123,6 +130,25 @@ const chartData = ref({
   gpu: { used: 0, free: 0 },
   npu: { used: 0, free: 0 }
 })
+
+const handleBlur =() =>{
+      // 在 `blur` 事件中更新 `isEditing` 的逻辑，防止干扰 v-model
+      // this.$nextTick(() => {
+        isEditing.value = false;
+      // });
+
+    }
+
+const HandleDeviceUpdate=async(name)=>{
+  console.log('123123123',name);
+  
+  let tmp=await DeviceUpdate({
+    id:Number(route.path.slice(7)),
+    name:name
+  })
+  console.log(tmp.data);
+  isEditing = true
+}
 
 const memoryData = ref([
   { value: 298.24, name: 'memoryUsed' },
@@ -205,6 +231,14 @@ const charts = [
   { key: 'gpu', id: 'gpuChart', title: 'GPU Usage' },
   { key: 'npu', id: 'npuChart', title: 'NPU Usage' },
   // { key: 'memory', id: 'memory', title: 'Memory Usage' },
+  //{ key: 'network', id: 'network', title: 'Network Usage' }
+]
+
+const chartsRender = [
+  { key: 'cpu', id: 'cpuChart', title: 'CPU Usage' },
+  { key: 'gpu', id: 'gpuChart', title: 'GPU Usage' },
+  { key: 'npu', id: 'npuChart', title: 'NPU Usage' },
+  // { key: 'memory', id: 'memory', title: 'Memory Usage' },
   { key: 'network', id: 'network', title: 'Network Usage' }
 ]
 
@@ -224,7 +258,7 @@ const fetchData = async () => {
         element.id,
         element.id + '' === route.params.id
       )
-
+      tmpName.value=element.name
       if (element.id + '' === route.params.id + '') {
         console.log('道爷，我成了')
         deviceType.value = element.deviceType
@@ -232,14 +266,18 @@ const fetchData = async () => {
         chartData.value.gpu = element.gpu
         chartData.value.npu = element.npu
         allData.value.ip = element.ip
+        console.log('###',element.memoryTotal ,element.memoryUsed);
+        
         memoryData.value[0].value = element.memoryUsed
         memoryData.value[1].value = element.memoryTotal - element.memoryUsed
         let tmp = [...networkUploadData.value]
-        tmp.push(element.networkUpload)
+        tmp.push((element.networkUpload).toFixed(2))
         tmp.shift()
+        
         networkUploadData.value = [...tmp]
+        console.log('####',tmp,networkUploadData.value);
         let tmp2 = [...networkDownloadData.value]
-        tmp.push(element.networkDownload)
+        tmp.push((element.networkDownload).toFixed(2))
         tmp.shift()
         networkDownloadData.value = [...tmp2]
       }
@@ -250,6 +288,8 @@ const fetchData = async () => {
     console.error('Failed to fetch chart data:', error)
   }
 }
+
+const tmpName=ref('')
 
 const allData = ref({
   id: 4,
@@ -274,7 +314,7 @@ const allData = ref({
 
 // 渲染图表函数
 const renderCharts = () => {
-  charts.forEach(chart => {
+  chartsRender.forEach(chart => {
     console.log('testtest', chart.id)
     if (deviceType.value === 'jetson') {
       if (chart.key === 'npu') {
@@ -386,15 +426,22 @@ const renderCharts = () => {
         text: chart.title,
         left: 'center'
       },
+      tooltip: {
+    trigger: 'axis',
+     //formatter: networkHandleFunc(params)
+  },
+    legend: {
+    data: [`'上传速度 (kb/s)' , '下载速度 (kb/s)'`]
+  },
       xAxis: {
         type: 'category',
         data: [
-          getCurrentTime() - 6,
-          getCurrentTime() - 5,
-          getCurrentTime() - 4,
-          getCurrentTime() - 3,
-          getCurrentTime() - 2,
-          getCurrentTime() - 1,
+          getCurrentTime(6),
+          getCurrentTime(5) ,
+          getCurrentTime(4) ,
+          getCurrentTime(3),
+          getCurrentTime(2),
+          getCurrentTime(1),
           getCurrentTime()
         ]
       },
@@ -403,16 +450,18 @@ const renderCharts = () => {
       },
       series: [
         {
-          name: 'networkUpload',
+          name: '上传速度 (kb/s)',
           type: 'line',
           //stack: 'Total',
-          data: networkUploadData.value
+          data: networkUploadData.value,
+          
         },
         {
-          name: 'networkDownload',
+          name: '下载速度 (kb/s)',
           type: 'line',
           //stack: 'Total',
-          data: networkDownloadData.value
+          data: networkDownloadData.value,
+        
         }
       ]
     }
@@ -431,13 +480,17 @@ const renderCharts = () => {
 
 let fastRequest = true
 
-const getCurrentTime = () => {
+const getCurrentTime = (num) => {
   let currentDateTime = new Date()
   let hours = currentDateTime.getHours().toString().padStart(2, '0')
   let minutes = currentDateTime.getMinutes().toString().padStart(2, '0')
-  let seconds = currentDateTime.getSeconds().toString().padStart(2, '0')
+  let seconds = currentDateTime.getSeconds().toString().padStart(2, '0')-1
 
   return `${hours}:${minutes}:${seconds}`
+}
+
+const memoryHandleData=(num)=>{
+  return (num/1024).toFixed(2) + 'GB'
 }
 
 const startExecution = () => {
@@ -459,14 +512,15 @@ const startExecution = () => {
         chartData.value.npu = element.npu
         allData.value.ip = element.ip
 
-        memoryData.value[0].value = element.memoryUsed
-        memoryData.value[1].value = element.value - element.memoryUsed
+        memoryData.value[0].value = memoryHandleData(element.memoryUsed)
+        memoryData.value[1].value = memoryHandleData(element.memoryTotal - element.memoryUsed)
         let tmp = [...networkUploadData.value]
-        tmp.push(element.networkUpload)
+        tmp.push((element.networkUpload).toFixed(2))
         tmp.shift()
         networkUploadData.value = [...tmp]
+        console.log('####',tmp,networkUploadData.value);
         let tmp2 = [...networkDownloadData.value]
-        tmp2.push(element.networkDownload)
+        tmp2.push((element.networkDownload).toFixed(2))
         tmp2.shift()
         networkDownloadData.value = [...tmp2]
       }
@@ -483,10 +537,18 @@ const startExecution = () => {
   timerId = setInterval(executeFunction, interval)
 }
 
+const networkHandleFunc=(speed)=>{
+  if(speed>1000){
+    return (speed/1000).toFixed(2) + 'Mb/s'
+  }else{
+    return speed.toFixed(2) + 'Kb/s'
+  }
+}
+
 // 初次加载数据
 onMounted(async () => {
   console.log('123', route.path)
-
+  
   let tmp = await DeployListDevice({
     pageNum: pagination.value.current,
     pageSize: pagination.value.pageSize,
@@ -495,6 +557,7 @@ onMounted(async () => {
   pagination.value.total = tmp.data.total
   deployLists.value = tmp.data.list
   console.log(route, route.path)
+  
   allStore.saveCurrentUrl(route.path)
   fetchData()
   // NOTE: 停止执行请求可以通过检测当前的 url 啊

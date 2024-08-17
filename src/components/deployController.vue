@@ -15,7 +15,7 @@
       :columns="columns"
       :data-source="deployLists"
       :pagination="pagination"
-      :show-total="total => `一共{pagination.value.total}`"
+      :show-total="total => `一共${pagination.value.total}`"
     >
       <template #headerCell="{ column }">
         <template v-if="column.key === 'deviceName'">
@@ -56,6 +56,9 @@
           <a-button @click="deployDeleteClicked(record.deployId)"
             >删除</a-button
           >
+          <a-button @click="reDeployButtonClicked(record.deployId)"
+            >重新部署</a-button
+          >
         </template>
       </template>
     </a-table>
@@ -74,6 +77,10 @@ import {
 import { ref, onMounted } from 'vue'
 
 const deployLists = ref([])
+
+const reDeployButtonClicked = () => {
+  console.log('点击了重新部署按钮')
+}
 
 const deployRestartClicked = async id => {
   let tmp = DeployRestart({
