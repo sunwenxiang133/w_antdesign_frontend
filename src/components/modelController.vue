@@ -1,30 +1,44 @@
 <template>
   <div style="background: #ececec; padding: 30px; height: 100vh">
     <div style="font-size: 30px; font-weight: 600">模型</div>
-    <a-input-search
-      v-model:value="searchText"
-      placeholder="input search text"
-      enter-button
-      @search="onSearch"
-    />
-    <div style="margin: 1.5vh 0 5vh">模型管理中心</div>
-    <div>
+    <!-- <div
+      style="
+        display: flex;
+        align-items: center;
+        flex-direction: row;
+        max-height: 3vh;
+      "
+    >
+      <div style="margin: 1.5vh 0 5vh; font-size: 20px">模型管理中心</div>
+      <div style="max-width: 20vw">
+        <a-input-search
+          v-model:value="searchText"
+          placeholder="input search text"
+          enter-button
+          @search="onSearch"
+        />
+      </div>
+    </div> -->
+
+    <a-card
+      title="应用列表"
+      :bordered="false"
+      style="width: 100%; margin-top: 3vh; background-color: rgb(240, 240, 240)"
+    >
+      <template #extra>
+        <div style="display: flex">
+          <div>
+            <a-input-search
+              v-model:value="searchText"
+              placeholder="请输入"
+              enter-button
+              @search="onSearch"
+            />
+          </div>
+        </div>
+      </template>
+
       <a-row :gutter="16">
-        <!-- <a-col :span="8">
-          <a-card title="Card title" :bordered="false">
-            <p>card content</p>
-          </a-card>
-        </a-col>
-        <a-col :span="8">
-          <a-card title="Card title" :bordered="false">
-            <p>card content</p>
-          </a-card>
-        </a-col>
-        <a-col :span="8">
-          <a-card title="Card title" :bordered="false">
-            <p>card content</p>
-          </a-card>
-        </a-col> -->
         <a-col :span="8">
           <a-card
             :onclick="setModalVisible"
@@ -45,7 +59,24 @@
           :key="index"
           style="margin-bottom: 3vh"
         >
-          <a-card :title="item.name" hoverable>
+          <a-card hoverable>
+            <template #title>
+              <div
+                style="
+                  display: flex;
+                  align-items: center;
+                  justify-content: space-between;
+                "
+              >
+                <div>{{ item.name }}</div>
+                <div style="font-size: 16px; display: flex">
+                  <div style="color: #555555">id :</div>
+                  <div>
+                    {{ item.id }}
+                  </div>
+                </div>
+              </div>
+            </template>
             <p>{{ item.desc }}</p>
             <p>{{ item.id }}</p>
             <template #actions>
@@ -71,6 +102,56 @@
           </a-card>
         </a-col>
       </a-row>
+      <a-row style="display: flex; align-items: end; flex-direction: column">
+        <a-pagination
+          v-model:current="currentPage"
+          show-quick-jumper
+          :pageSize="pageSize"
+          :pageSizeOptions="pageSizeOptions"
+          :total="totalPage"
+          @change="handlePageChange"
+          @show-size-change="handleSizeChange"
+          />
+          <!-- :show-total="total => `一共${totalPage}`" -->
+      </a-row>
+    </a-card>
+
+    <!-- <div>
+      <a-row :gutter="16">
+        <a-col :span="8">
+          <a-card
+            :onclick="setModalVisible"
+            hoverable
+            style="
+              height: calc(100% - 3vh);
+              display: flex;
+              align-items: center;
+              justify-content: center;
+            "
+          >
+            <div style="padding: 4vh 5vw">添加模型</div>
+          </a-card>
+        </a-col>
+        <a-col
+          :span="8"
+          v-for="(item, index) in cardInfos"
+          :key="index"
+          style="margin-bottom: 3vh"
+        >
+          <a-card :title="item.name" hoverable>
+            <p>{{ item.desc }}</p>
+            <p>{{ item.id }}</p>
+            <template #actions>
+              
+              <div @click="modelUpdateButtonPanelClicked(item)">编辑</div>
+              <div @click="modelDeleteClicked(item)">删除</div>
+              
+              <div @click="downloadModel(item.url)">下载模型</div>
+            </template>
+            
+          </a-card>
+        </a-col>
+      </a-row>
     </div>
     <a-pagination
       v-model:current="currentPage"
@@ -81,7 +162,7 @@
       @change="handlePageChange"
       @show-size-change="handleSizeChange"
       :show-total="total => `一共${totalPage}`"
-    />
+    /> -->
 
     <a-modal
       v-model:open="modelUpdatePanel"
@@ -167,7 +248,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, watch } from 'vue'
+import { ref, reactive, onMounted, watch, computed } from 'vue'
 import { message } from 'ant-design-vue'
 import {
   ModelCreate,
@@ -194,6 +275,10 @@ const handleChange = info => {
     // 更新 fileList 状态
     fileList.value = [...info.fileList]
   }
+}
+
+const computedName = (title, subtitle) => {
+  return title + ' ' + ' ' + ' ' + ' ' + ' ' + ' ' + 'id:' + subtitle
 }
 
 const modelUpdatePanel = ref(false)

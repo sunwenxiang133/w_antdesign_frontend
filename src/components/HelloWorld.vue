@@ -54,8 +54,8 @@
       :columns="columns"
       :data-source="deployLists"
       :pagination="pagination"
-      :show-total="total => `一共${pagination.value.total}`"
-    >
+      >
+      <!-- :show-total="total => `一共${pagination.value.total}`" -->
       <template #headerCell="{ column }">
         <template v-if="column.key === 'deviceName'">
           <span>
@@ -239,7 +239,9 @@ const chartsRender = [
   { key: 'gpu', id: 'gpuChart', title: 'GPU Usage' },
   { key: 'npu', id: 'npuChart', title: 'NPU Usage' },
   // { key: 'memory', id: 'memory', title: 'Memory Usage' },
-  { key: 'network', id: 'network', title: 'Network Usage' }
+  { key: 'network', id: 'network', title: 'Network Usage' },
+  { key: 'gpuPic', id: 'gpuPic', title: 'GPU Pic' },
+  { key: 'cpuPic', id: 'cpuPic', title: 'CPU Pic' },
 ]
 
 const deviceType = ref('')
@@ -271,13 +273,13 @@ const fetchData = async () => {
         memoryData.value[0].value = element.memoryUsed
         memoryData.value[1].value = element.memoryTotal - element.memoryUsed
         let tmp = [...networkUploadData.value]
-        tmp.push((element.networkUpload).toFixed(2))
+        tmp.push((element.networkUpload*100).toFixed(6))
         tmp.shift()
         
         networkUploadData.value = [...tmp]
         console.log('####',tmp,networkUploadData.value);
         let tmp2 = [...networkDownloadData.value]
-        tmp.push((element.networkDownload).toFixed(2))
+        tmp.push((element.networkDownload*100).toFixed(6))
         tmp.shift()
         networkDownloadData.value = [...tmp2]
       }
@@ -431,18 +433,18 @@ const renderCharts = () => {
      //formatter: networkHandleFunc(params)
   },
     legend: {
-    data: [`'上传速度 (kb/s)' , '下载速度 (kb/s)'`]
+    data: [`'上行占用 (%)' , '下行占用 (%)'`]
   },
       xAxis: {
         type: 'category',
         data: [
-          getCurrentTime(6),
-          getCurrentTime(5) ,
-          getCurrentTime(4) ,
-          getCurrentTime(3),
-          getCurrentTime(2),
-          getCurrentTime(1),
-          getCurrentTime()
+          '-6s',
+          '-5s',
+          '-4s',
+          '-3s',
+          '-2s',
+          '-1s',
+          '0'
         ]
       },
       yAxis: {
@@ -450,14 +452,14 @@ const renderCharts = () => {
       },
       series: [
         {
-          name: '上传速度 (kb/s)',
+          name: '上行占用 (%)',
           type: 'line',
           //stack: 'Total',
           data: networkUploadData.value,
           
         },
         {
-          name: '下载速度 (kb/s)',
+          name: '下行占用 (%)',
           type: 'line',
           //stack: 'Total',
           data: networkDownloadData.value,
@@ -473,6 +475,12 @@ const renderCharts = () => {
       chartInstance.setOption(option2)
     }
     if (chart.key === 'network') {
+      chartInstance.setOption(option3)
+    }
+    if (chart.key === 'gpuPic') {
+      chartInstance.setOption(option3)
+    }
+    if (chart.key === 'cpuPic') {
       chartInstance.setOption(option3)
     }
   })
@@ -515,12 +523,12 @@ const startExecution = () => {
         memoryData.value[0].value = memoryHandleData(element.memoryUsed)
         memoryData.value[1].value = memoryHandleData(element.memoryTotal - element.memoryUsed)
         let tmp = [...networkUploadData.value]
-        tmp.push((element.networkUpload).toFixed(2))
+        tmp.push((element.networkUpload*100).toFixed(6))
         tmp.shift()
         networkUploadData.value = [...tmp]
         console.log('####',tmp,networkUploadData.value);
         let tmp2 = [...networkDownloadData.value]
-        tmp2.push((element.networkDownload).toFixed(2))
+        tmp2.push((element.networkDownload*100).toFixed(6))
         tmp2.shift()
         networkDownloadData.value = [...tmp2]
       }

@@ -15,8 +15,8 @@
       :columns="columns"
       :data-source="deployLists"
       :pagination="pagination"
-      :show-total="total => `一共${pagination.value.total}`"
-    >
+      >
+      <!-- :show-total="total => `一共${pagination.value.total}`" -->
       <template #headerCell="{ column }">
         <template v-if="column.key === 'deviceName'">
           <span>

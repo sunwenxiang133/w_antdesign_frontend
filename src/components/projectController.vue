@@ -105,8 +105,8 @@
           :total="totalPage"
           @change="handlePageChange"
           @show-size-change="handleSizeChange"
-          :show-total="total => `一共 ${ totalPage } 项`"
-        />
+          />
+          <!-- :show-total="total => `一共 ${ totalPage } 项`" -->
       </a-row>
     </a-card>
     <a-button
