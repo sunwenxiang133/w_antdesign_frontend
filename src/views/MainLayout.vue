@@ -3,30 +3,16 @@
     <a-menu
       mode="inline"
       :default-selected-keys="selectedKeys"
-      :default-open-keys="openKeys"
+      :default-open-keys="['device']"
       @select="handleSelect"
       class="left-side"
       style="height: 100vh"
     >
-      <!-- <a-menu-item key="project">项目</a-menu-item>
-      <a-menu-item key="model">模型</a-menu-item>
-      
-      <a-sub-menu key="device" title="设备">
-        <a-menu-item-group key="device-group" title="在线设备">
-          <a-menu-item key="device-online1">设备 1</a-menu-item>
-          <a-menu-item key="device-online2">设备 2</a-menu-item>
-        </a-menu-item-group>
-        <a-menu-item-group key="device-group" title="离线设备">
-          <a-menu-item key="device-offline1">设备 1</a-menu-item>
-          <a-menu-item key="device-offline2">设备 2</a-menu-item>
-        </a-menu-item-group>
-      </a-sub-menu>
-      <a-menu-item key="deploy">部署</a-menu-item> -->
       <template v-for="menu in menus" :key="menu.key">
         <a-menu-item v-if="!menu.children" :key="menu.key">
           {{ menu.title }}
         </a-menu-item>
-        <a-sub-menu v-else :key="menu.key" :title="menu.title">
+        <a-sub-menu v-else :key="device" :title="menu.title">
           <template v-for="subMenu in menu.children" :key="subMenu.key">
             <a-menu-item-group
               v-if="subMenu.children"
@@ -45,16 +31,19 @@
       </template>
     </a-menu>
     <div style="flex: 1">
-      <router-view class="right-side" style="flex: initial"></router-view>
+      <router-view
+        class="right-side"
+        style="flex: initial; overflow-y: auto"
+      ></router-view>
     </div>
   </div>
 </template>
 
 <script>
-import { defineComponent, ref,onMounted } from 'vue'
+import { defineComponent, ref, onMounted, watch, provide } from 'vue'
 import { Menu } from 'ant-design-vue'
-import { useRouter } from 'vue-router'
-import { DeviceList } from '../api/api';
+import { useRoute, useRouter } from 'vue-router'
+import { DeviceList, allOnlineListDeviceReq } from '../api/api'
 
 export default defineComponent({
   components: {
@@ -67,14 +56,26 @@ export default defineComponent({
     const selectedKeys = ref(['project1'])
     const openKeys = ref(['project'])
     const router = useRouter()
+    const route = useRoute()
+
+    const routeId = route.params.id
+
+    watch(
+      () => route.params.id,
+      (newId, oldId) => {
+        if (newId !== oldId) {
+          // 当 id 变化时，刷新页面
+          window.location.reload()
+        }
+      }
+    )
 
     const menus = ref([
-    {
+      {
         key: 'device',
         title: '设备',
-        children: [
-        ]
-    },
+        children: []
+      },
       {
         key: 'project',
         title: '应用'
@@ -94,15 +95,41 @@ export default defineComponent({
       router.push(key)
     }
 
-    onMounted(async()=>{
-      let tmp = await DeviceList()
-      console.log(tmp.data.onlineList);
-      tmp.data.onlineList.forEach(element => {
-        menus.value[0].children.push({
-          key: '/device'+element.id,
-          title: element.name+''+'('+element.ip+')'
+    const updateMenuMethod = async () => {
+      console.log('执行更新动态路由')
+
+      let tmp = await allOnlineListDeviceReq()
+      // console.log('testtest', tmp.data, tmp.data.onlineList)
+      if (tmp.data.list !== undefined) {
+        menus.value[0].children = []
+        tmp.data.list.forEach(element => {
+          menus.value[0].children.push({
+            key: '/device' + element.id,
+            title: element.name + '' + '(' + element.ip + ')'
+          })
         })
-      });;
+      }
+    }
+
+    const startExecution = () => {
+      let interval = 2000
+      let timerId
+
+      const executeFunction = async () => {
+        // if (route.path !== allStore.currentUrl) {
+        //   fastRequest = false
+        // }
+        updateMenuMethod()
+      }
+
+      timerId = setInterval(executeFunction, interval)
+    }
+
+    provide('updateMenuMethod', updateMenuMethod)
+
+    onMounted(() => {
+      updateMenuMethod()
+      startExecution()
     })
 
     return {

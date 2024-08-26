@@ -36,7 +36,7 @@
               下载模型 ({{ record.progress }}%)
             </template>
             <template v-if="record.status === 2"> 已部署 </template>
-            <template v-if="record.status === 3"> 部署失败 </template>
+            <template v-if="record.status === 3"> 未运行 </template>
             <template v-if="record.status === 4"> 设备离线 </template>
             <template v-if="record.status === 5"> 未运行 </template>
           </a>
@@ -49,19 +49,51 @@
         <template v-else-if="column.key === 'action'">
           <a-button
             style="margin-right: 1vw"
-            @click="deployRestartClicked(record.deployId)"
+            @click="handleReStartButtonClicked(record.deployId)"
             >重启</a-button
           >
-          <a-button @click="deployStopClicked(record.deployId)">停止</a-button>
-          <a-button @click="deployDeleteClicked(record.deployId)"
+          <a-button @click="handleStopButtonClicked(record.deployId)">停止</a-button>
+          <a-button @click="handleDeleteButtonClicked(record.deployId)"
             >删除</a-button
           >
-          <a-button @click="reDeployButtonClicked(record.deployId)"
+          <a-button @click="handleReStartDeployButtonClicked(record.deployId)"
             >重新部署</a-button
           >
         </template>
       </template>
     </a-table>
+    <a-modal
+      v-model:open="isReStartModalVisible"
+      title="确定重启吗"
+      @ok="handleReStartOk"
+      @cancel="handleReStartCancel"
+    >
+      <p>点击重启</p>
+    </a-modal>
+    <a-modal
+      v-model:open="isStopModalVisible"
+      title="确定停止吗"
+      @ok="handleStopOk"
+      @cancel="handleStopCancel"
+    >
+      <p>点击停止</p>
+    </a-modal>
+    <a-modal
+      v-model:open="isDeleteModalVisible"
+      title="确定删除吗"
+      @ok="handleDeleteOk"
+      @cancel="handleDeleteCancel"
+    >
+      <p>点击删除</p>
+    </a-modal>
+    <a-modal
+      v-model:open="isReStartDeployModalVisible"
+      title="确定重新部署吗"
+      @ok="handleReStartDeployOk"
+      @cancel="handleReStartDeployCancel"
+    >
+      <p>点击重新部署</p>
+    </a-modal>
   </div>
 </template>
 
@@ -72,16 +104,88 @@ import {
   DeployList,
   DeployDelete,
   DeployStop,
-  DeployRestart
+  DeployRestart,
+  DeployRestartDownload
 } from '../api/api.js'
 import { ref, onMounted } from 'vue'
 
 const deployLists = ref([])
+const isReStartModalVisible=ref(false)
+const isStopModalVisible=ref(false)
+const isDeleteModalVisible=ref(false)
+const isReStartDeployModalVisible=ref(false)
+
+const tmpRestartId=ref();
+const tmpDeleteId=ref();
+const tmpStopId=ref();
+const tmpReStartDeployId=ref();
+
+
+const handleReStartButtonClicked=(id)=>{
+  tmpRestartId.value=id
+  isReStartModalVisible.value=true
+}
+
+const handleStopButtonClicked=(id)=>{
+  tmpStopId.value=id
+  isStopModalVisible.value=true
+}
+
+const handleDeleteButtonClicked=(id)=>{
+  tmpDeleteId.value=id
+  isDeleteModalVisible.value=true
+}
+
+const handleReStartDeployButtonClicked=(id)=>{
+  tmpReStartDeployId.value=id
+  isReStartDeployModalVisible.value=true
+}
+
+const handleReStartOk=()=>{
+  deployRestartClicked(tmpRestartId.value)
+  isReStartModalVisible.value=false
+}
+
+const handleReStartCancel=()=>{
+  isReStartModalVisible.value=false
+}
+
+const handleStopOk=()=>{
+  deployStopClicked(tmpStopId.value)
+  isStopModalVisible.value=false
+}
+const handleStopCancel=()=>{
+  isStopModalVisible.value=false
+}
+const handleDeleteOk=()=>{
+  deployDeleteClicked(tmpDeleteId.value)
+  isDeleteModalVisible.value=false
+}
+
+const handleDeleteCancel=()=>{
+  isDeleteModalVisible.value=false
+}
+
+const handleReStartDeployOk=()=>{
+  redeployClicked(tmpReStartDeployId.value)
+  isReStartDeployModalVisible.value=false
+}
+
+const handleReStartDeployCancel=()=>{
+  isReStartDeployModalVisible.value=false
+}
 
 const reDeployButtonClicked = () => {
   console.log('点击了重新部署按钮')
 }
 
+const redeployClicked = async id =>{
+  let tmp = DeployRestartDownload({
+    deployId: id
+  })
+  message.info(tmp.data.msg)
+  window.location.reload()
+}
 const deployRestartClicked = async id => {
   let tmp = DeployRestart({
     deployId: id
@@ -122,9 +226,9 @@ const handleCancel = () => {
 }
 
 const deployDeleteClicked = async id => {
-  // let tmp1 = DeployDelete({
-  //   deployId: id
-  // })
+  let tmp1 = DeployDelete({
+    deployId: id
+  })
   // message.info(tmp1.data.msg)
   // let tmp = await DeployList({
   //   pageNum: pagination.value.current,
@@ -199,11 +303,11 @@ const startExecution = () => {
       fastRequest = false
     }
 
-    if (!fastRequest) {
-      clearInterval(timerId)
-      interval = 600000 // 修改间隔为 60 min
-      timerId = setInterval(executeFunction, interval)
-    }
+    // if (!fastRequest) {
+    //   clearInterval(timerId)
+    //   interval = 600000 // 修改间隔为 60 min
+    //   timerId = setInterval(executeFunction, interval)
+    // }
   }
 
   timerId = setInterval(executeFunction, interval)

@@ -71,14 +71,13 @@
                 <div>{{ item.name }}</div>
                 <div style="font-size: 16px; display: flex">
                   <div style="color: #555555">id :</div>
-                  <div>
+                  <div >
                     {{ item.id }}
                   </div>
-                </div>
+                </div>  
               </div>
             </template>
-            <p>{{ item.desc }}</p>
-            <p>{{ item.id }}</p>
+            <p :style="{height: '80px' }">{{ item.desc }}</p>
             <template #actions>
               <!-- <div
                 style="
@@ -339,9 +338,10 @@ const downloadMyUrl = myUrl => {
 const isModalVisible = ref(false)
 
 const handleOk = async () => {
+  console.log("test")
   isModalVisible.value = false
   let tmp = await ModelDelete({
-    id: item.id
+    id: selectedId.value
   })
   message.info(tmp.msg)
 
@@ -357,7 +357,7 @@ const handleOk = async () => {
 const handleCancel = () => {
   isModalVisible.value = false
 }
-
+const selectedId = ref(1); 
 const modelDeleteClicked = async item => {
   // let tmp = await ModelDelete({
   //   id: item.id
@@ -371,6 +371,8 @@ const modelDeleteClicked = async item => {
   // totalPage.value = tmp2.data.total
   // cardInfos.value = tmp2.data.list
   //window.location.reload()
+  console.log("选中的 id",item.id)
+  selectedId.value = item.id
   isModalVisible.value = true
 }
 

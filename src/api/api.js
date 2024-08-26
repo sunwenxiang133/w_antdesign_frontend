@@ -14,6 +14,11 @@ export const DeployList = data => requests.post('/v1/deploy/list', data)
 // NOTE: 部署任务重启
 export const DeployRestart = data => requests.post('/v1/deploy/restart', data)
 
+// NOTE: 部署任务重新下载并启动
+
+export const DeployRestartDownload = data =>
+  requests.post('/v1/deploy/redeploy', data)
+
 // NOTE: 部署任务状态
 export const DeployStatus = data => requests.post('/v1/deploy/status', data)
 
@@ -55,7 +60,8 @@ export const PresignedUrl = data =>
 export const ProjectListReq = data => requests.post('/v1/project/list', data)
 
 // NOTE: 项目搜索
-export const ProjectListSearch = data => requests.post('/v1/project/list/search', data)
+export const ProjectListSearch = data =>
+  requests.post('/v1/project/list/search', data)
 
 // NOTE: 项目更新
 export const ProjectUpdate = data => requests.post('/v1/project/update', data)
@@ -67,7 +73,14 @@ export const ProjectDelete = data => requests.post('/v1/project/delete', data)
 export const ProjectCreate = data => requests.post('/v1/project/create', data)
 
 // 模型搜索
-export const ModelSearch=data=>requests.post('/v1/model/listByName',data)
+export const ModelSearch = data => requests.post('/v1/model/listByName', data)
 
 // 更改设备名称
-export const DeviceUpdate=data=>requests.post('/v1/device/update',data)
+export const DeviceUpdate = data => requests.post('/v1/device/update', data)
+
+// 单个在线设备查询
+export const onlineListDeviceReq = data =>
+  requests.post('/v1/device/info', data)
+
+export const allOnlineListDeviceReq = data =>
+  requests.post('/v1/device/onlineList', data)

@@ -65,19 +65,8 @@
             <a-statistic title="待部署应用" :value="projectOverview[2]" />
         </a-col> -->
         <div style="display: flex; padding: 3px 0; align-items: center">
-          <a-avatar
-            shape="square"
-            size="large"
-            style="margin-right: 1vw"
-            src="http://162.14.78.140:8080/Scenery/1.jpg"
-          ></a-avatar>
           <div
-            style="
-              display: flex;
-              flex-direction: column;
-              align-items: center;
-              margin-right: 0.8vw;
-            "
+            style="display: flex; flex-direction: column; margin-right: 0.8vw"
           >
             <div style="font-size: 20px; font-weight: 600">
               {{ item.name }}
@@ -105,8 +94,8 @@
           :total="totalPage"
           @change="handlePageChange"
           @show-size-change="handleSizeChange"
-          />
-          <!-- :show-total="total => `一共 ${ totalPage } 项`" -->
+        />
+        <!-- :show-total="total => `一共 ${ totalPage } 项`" -->
       </a-row>
     </a-card>
     <a-button
@@ -309,11 +298,11 @@ import {
 import requests from '../api/request.js'
 
 const isModalVisible = ref(false)
-const deleteId=ref(0);
+const deleteId = ref(0)
 const handleOk = async () => {
   isModalVisible.value = false
 
-let tmp1 = await ProjectDelete({ id: deleteId.value })
+  let tmp1 = await ProjectDelete({ id: deleteId.value })
   message.info(tmp1.msg)
   //window.location.reload()
   let tmp = await ProjectListReq({
@@ -350,11 +339,11 @@ const deleteProjectClicked = async id => {
   // projectListDisplay.value = tmp.data.list
   // projectOverview.value[1] = tmp.data.deployed
   // projectOverview.value[2] = tmp.data.total - tmp.data.deployed
-  deleteId.value=id;
+  deleteId.value = id
   isModalVisible.value = true
 }
 
-const tmpFileNameUrl=ref('')
+const tmpFileNameUrl = ref('')
 const projectStatus = ref(-1)
 
 const searchFilter = async () => {
@@ -658,7 +647,7 @@ const handleAction = async file => {
     createProjectInfo.modelFileName
   )
   uploadUrlForAction.value = data.data.url
-  tmpFileNameUrl.value=data.data.name
+  tmpFileNameUrl.value = data.data.name
   return data.presignedUrl
 }
 
@@ -828,7 +817,7 @@ const test2 = async () => {
   console.log('test2 clicked', tmp)
 }
 
-const projectOverview = ref([6, 5, 3])
+const projectOverview = ref([0, 0, 0])
 const chooseProject = ref('a')
 const inputButtonVisible = ref(false)
 const addProjectButtonVisible = ref(false)
@@ -841,7 +830,7 @@ const setModalModelVisible = () => {
 }
 const projectList = ref([])
 const currentPage = ref(1)
-const totalPage = ref(20)
+const totalPage = ref(0)
 const pageSizeOptions = ref(['10', '20', '30', '40'])
 const pageSize = ref(5)
 const handlePageChange = async page => {
