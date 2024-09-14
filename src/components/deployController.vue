@@ -10,13 +10,21 @@
         </a-col>
       </a-row>
     </a-card>
+
+    <div>
+      <a-input-search
+        v-model:value="searchText"
+        placeholder="请输入"
+        enter-button
+        @search="onSearch"
+      />
+    </div>
     <a-table
       style="margin-top: 2vh"
       :columns="columns"
       :data-source="deployLists"
       :pagination="pagination"
-      >
-      <!-- :show-total="total => `一共${pagination.value.total}`" -->
+    >
       <template #headerCell="{ column }">
         <template v-if="column.key === 'deviceName'">
           <span>
@@ -52,7 +60,9 @@
             @click="handleReStartButtonClicked(record.deployId)"
             >重启</a-button
           >
-          <a-button @click="handleStopButtonClicked(record.deployId)">停止</a-button>
+          <a-button @click="handleStopButtonClicked(record.deployId)"
+            >停止</a-button
+          >
           <a-button @click="handleDeleteButtonClicked(record.deployId)"
             >删除</a-button
           >
@@ -108,84 +118,102 @@ import {
   DeployRestartDownload
 } from '../api/api.js'
 import { ref, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+
+const searchText = ref('')
+
+const filterCards = async () => {
+  console.log('执行搜索')
+
+  let tmp = await ModelSearch({
+    name: searchText.value,
+    pageNum: currentPage.value,
+    pageSize: pageSize.value
+  })
+
+  totalPage.value = tmp.data.total
+  cardInfos.value = tmp.data.list
+
+  console.log('hashasdf', tmp)
+}
 
 const deployLists = ref([])
-const isReStartModalVisible=ref(false)
-const isStopModalVisible=ref(false)
-const isDeleteModalVisible=ref(false)
-const isReStartDeployModalVisible=ref(false)
+const isReStartModalVisible = ref(false)
+const isStopModalVisible = ref(false)
+const isDeleteModalVisible = ref(false)
+const isReStartDeployModalVisible = ref(false)
 
-const tmpRestartId=ref();
-const tmpDeleteId=ref();
-const tmpStopId=ref();
-const tmpReStartDeployId=ref();
+const tmpRestartId = ref()
+const tmpDeleteId = ref()
+const tmpStopId = ref()
+const tmpReStartDeployId = ref()
 
-
-const handleReStartButtonClicked=(id)=>{
-  tmpRestartId.value=id
-  isReStartModalVisible.value=true
+const handleReStartButtonClicked = id => {
+  tmpRestartId.value = id
+  isReStartModalVisible.value = true
 }
 
-const handleStopButtonClicked=(id)=>{
-  tmpStopId.value=id
-  isStopModalVisible.value=true
+const handleStopButtonClicked = id => {
+  tmpStopId.value = id
+  isStopModalVisible.value = true
 }
 
-const handleDeleteButtonClicked=(id)=>{
-  tmpDeleteId.value=id
-  isDeleteModalVisible.value=true
+const handleDeleteButtonClicked = id => {
+  tmpDeleteId.value = id
+  isDeleteModalVisible.value = true
 }
 
-const handleReStartDeployButtonClicked=(id)=>{
-  tmpReStartDeployId.value=id
-  isReStartDeployModalVisible.value=true
+const handleReStartDeployButtonClicked = id => {
+  tmpReStartDeployId.value = id
+  isReStartDeployModalVisible.value = true
 }
 
-const handleReStartOk=()=>{
+const handleReStartOk = () => {
   deployRestartClicked(tmpRestartId.value)
-  isReStartModalVisible.value=false
+  isReStartModalVisible.value = false
 }
 
-const handleReStartCancel=()=>{
-  isReStartModalVisible.value=false
+const handleReStartCancel = () => {
+  isReStartModalVisible.value = false
 }
 
-const handleStopOk=()=>{
+const handleStopOk = () => {
   deployStopClicked(tmpStopId.value)
-  isStopModalVisible.value=false
+  isStopModalVisible.value = false
 }
-const handleStopCancel=()=>{
-  isStopModalVisible.value=false
+const handleStopCancel = () => {
+  isStopModalVisible.value = false
 }
-const handleDeleteOk=()=>{
+const handleDeleteOk = () => {
   deployDeleteClicked(tmpDeleteId.value)
-  isDeleteModalVisible.value=false
+  isDeleteModalVisible.value = false
 }
 
-const handleDeleteCancel=()=>{
-  isDeleteModalVisible.value=false
+const handleDeleteCancel = () => {
+  isDeleteModalVisible.value = false
 }
 
-const handleReStartDeployOk=()=>{
+const handleReStartDeployOk = () => {
   redeployClicked(tmpReStartDeployId.value)
-  isReStartDeployModalVisible.value=false
+  isReStartDeployModalVisible.value = false
 }
 
-const handleReStartDeployCancel=()=>{
-  isReStartDeployModalVisible.value=false
+const handleReStartDeployCancel = () => {
+  isReStartDeployModalVisible.value = false
 }
 
 const reDeployButtonClicked = () => {
   console.log('点击了重新部署按钮')
 }
 
-const redeployClicked = async id =>{
+const redeployClicked = async id => {
   let tmp = DeployRestartDownload({
     deployId: id
   })
   message.info(tmp.data.msg)
   window.location.reload()
 }
+
 const deployRestartClicked = async id => {
   let tmp = DeployRestart({
     deployId: id
@@ -279,6 +307,8 @@ onMounted(async () => {
   startExecution()
 })
 
+const route = useRoute()
+
 const startExecution = () => {
   let interval = 1000
   let timerId
@@ -292,28 +322,35 @@ const startExecution = () => {
     let fastRequest = true
     let allDeployed = false
     let deployedNum = 0
-    deployLists.value.forEach(item => {
-      if (item.status === 2) {
-        deployedNum++
-      }
-    })
-    if (deployedNum !== deployLists.value.length) {
-      fastRequest = true
-    } else {
+    // if (deployLists.value !== null) {
+    //   deployLists.value.forEach(item => {
+    //     if (item.status === 2) {
+    //       deployedNum++
+    //     }
+    //   })
+    //   if (deployedNum !== deployLists.value.length) {
+    //     fastRequest = true
+    //   } else {
+    //     fastRequest = false
+    //   }
+    // }
+
+    if (route.path !== '/deploy') {
       fastRequest = false
     }
 
-    // if (!fastRequest) {
-    //   clearInterval(timerId)
-    //   interval = 600000 // 修改间隔为 60 min
-    //   timerId = setInterval(executeFunction, interval)
-    // }
+    if (!fastRequest) {
+      clearInterval(timerId)
+      interval = 600000 // 修改间隔为 60 min
+      timerId = setInterval(executeFunction, interval)
+    }
+    console.log('dear', route.path)
   }
 
   timerId = setInterval(executeFunction, interval)
 }
 
-let deployOverview = ref([6, 5, 3])
+let deployOverview = ref([0, 0, 0])
 const columns = [
   {
     name: '设备',
