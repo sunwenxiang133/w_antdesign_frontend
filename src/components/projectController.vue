@@ -502,6 +502,19 @@ const deployProjectClicked = async () => {
     modelId: tmpModelId,
     cmd: deployProjectInfo.cmd
   })
+  console.log('123123', tmp.data)
+  if (tmp.data.code === -1) {
+    message.info('失败!', tmp.data.message)
+  } else {
+    message.info(
+      '已部署!' +
+        '设备名:' +
+        tmp.data.deviceName +
+        '设备id:' +
+        tmp.data.deviceId,
+      0.8
+    )
+  }
 }
 
 const tmpNames = ref([])

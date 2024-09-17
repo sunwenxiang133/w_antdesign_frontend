@@ -17,6 +17,7 @@
         placeholder="请输入"
         enter-button
         @search="onSearch"
+        style="margin-top: 1.5vh"
       />
     </div>
     <a-table
@@ -43,16 +44,20 @@
             <template v-if="record.status === 1">
               下载模型 ({{ record.progress }}%)
             </template>
-            <template v-if="record.status === 2"> 已部署 </template>
-            <template v-if="record.status === 3"> 未运行 </template>
+            <template v-if="record.status === 2"> 已部署-正在运行 </template>
+            <template v-if="record.status === 3"> 已部署-未运行 </template>
             <template v-if="record.status === 4"> 设备离线 </template>
             <template v-if="record.status === 5"> 未运行 </template>
           </a>
         </template>
 
-        <!-- <template v-if="column.key === 'progress'">
-          <a-progress :percent="record.progress" />
-        </template> -->
+        <template v-if="column.key === 'deviceName'">
+          <!-- <a-progress :percent="record.progress" /> -->
+          <!-- {{ record.deviceName }} -->
+          <span @click="switchToPage(record.deviceId)" style="cursor: pointer">
+            {{ record.deviceName }}
+          </span>
+        </template>
 
         <template v-else-if="column.key === 'action'">
           <a-button
@@ -115,26 +120,33 @@ import {
   DeployDelete,
   DeployStop,
   DeployRestart,
-  DeployRestartDownload
+  DeployRestartDownload,
+  DeploySearch
 } from '../api/api.js'
 import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 
 const searchText = ref('')
+const route = useRoute()
+const router = useRouter()
+
+const switchToPage = id => {
+  console.log('点击事件', id)
+  router.push('/device' + id)
+}
 
 const filterCards = async () => {
   console.log('执行搜索')
 
-  let tmp = await ModelSearch({
-    name: searchText.value,
+  let tmp = await DeploySearch({
+    search: searchText.value,
     pageNum: currentPage.value,
     pageSize: pageSize.value
   })
 
+  console.log('hashasdf', tmp.data.list, deployLists.value)
   totalPage.value = tmp.data.total
-  cardInfos.value = tmp.data.list
-
-  console.log('hashasdf', tmp)
+  deployLists.value = tmp.data.list
 }
 
 const deployLists = ref([])
@@ -147,6 +159,12 @@ const tmpRestartId = ref()
 const tmpDeleteId = ref()
 const tmpStopId = ref()
 const tmpReStartDeployId = ref()
+
+const onSearch = () => {
+  console.log('执行搜索2')
+
+  filterCards()
+}
 
 const handleReStartButtonClicked = id => {
   tmpRestartId.value = id
@@ -307,10 +325,10 @@ onMounted(async () => {
   startExecution()
 })
 
-const route = useRoute()
+// const route = useRoute()
 
 const startExecution = () => {
-  let interval = 1000
+  let interval = 2000
   let timerId
 
   const executeFunction = async () => {

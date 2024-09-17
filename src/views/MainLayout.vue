@@ -8,11 +8,24 @@
       class="left-side"
       style="height: 100vh"
     >
-      <template v-for="menu in menus" :key="menu.key">
-        <a-menu-item v-if="!menu.children" :key="menu.key">
-          {{ menu.title }}
-        </a-menu-item>
-        <!-- <a-sub-menu v-else :key="device" :title="menu.title">
+      <div
+        style="
+          height: 100px;
+          line-height: 100px;
+          text-align: center;
+          font-size: 30px;
+          background-color: #74c0fc;
+          font-weight: 700;
+        "
+      >
+        AI算力调度平台
+      </div>
+      <div>
+        <template v-for="menu in menus" :key="menu.key">
+          <a-menu-item v-if="!menu.children" :key="menu.key">
+            {{ menu.title }}
+          </a-menu-item>
+          <!-- <a-sub-menu v-else :key="device" :title="menu.title">
           <template v-for="subMenu in menu.children" :key="subMenu.key">
             <a-menu-item-group
               v-if="subMenu.children"
@@ -28,23 +41,24 @@
             </a-menu-item>
           </template>
         </a-sub-menu> -->
-        <a-sub-menu v-else :key="device" :title="menu.title">
-          <template v-for="subMenu in menu.children" :key="subMenu.key">
-            <a-menu-item-group
-              v-if="subMenu.children"
-              :key="subMenu.key"
-              :title="subMenu.title"
-            >
-              <a-menu-item v-for="item in subMenu.children" :key="item.key">
-                {{ item.title }}
+          <a-sub-menu v-else :key="device" :title="menu.title">
+            <template v-for="subMenu in menu.children" :key="subMenu.key">
+              <a-menu-item-group
+                v-if="subMenu.children"
+                :key="subMenu.key"
+                :title="subMenu.title"
+              >
+                <a-menu-item v-for="item in subMenu.children" :key="item.key">
+                  {{ item.title }}
+                </a-menu-item>
+              </a-menu-item-group>
+              <a-menu-item v-else :key="subMenu.key">
+                {{ subMenu.title }}
               </a-menu-item>
-            </a-menu-item-group>
-            <a-menu-item v-else :key="subMenu.key">
-              {{ subMenu.title }}
-            </a-menu-item>
-          </template>
-        </a-sub-menu>
-      </template>
+            </template>
+          </a-sub-menu>
+        </template>
+      </div>
     </a-menu>
     <div style="flex: 1">
       <router-view
@@ -57,7 +71,7 @@
 </template>
 
 <script>
-import { defineComponent, ref, onMounted, watch, provide } from 'vue'
+import { defineComponent, ref, onMounted, watch, provide, nextTick } from 'vue'
 import { Menu, message } from 'ant-design-vue'
 import { useRoute, useRouter } from 'vue-router'
 import { DeviceList, allOnlineListDeviceReq } from '../api/api'
@@ -100,6 +114,7 @@ export default defineComponent({
     const handleSelect = ({ key }) => {
       console.log('selected key:', key)
       router.push(key)
+      // location.reload()
     }
 
     let deviceBefore = ref([])
@@ -137,6 +152,8 @@ export default defineComponent({
       let tmp = await allOnlineListDeviceReq()
     }
 
+    let fastCompare = ref(true)
+
     const updateMenuMethod = async () => {
       console.log('执行更新动态路由')
 
@@ -145,6 +162,14 @@ export default defineComponent({
       console.log('sunsunsun', deviceBeforeLength, tmp2, tmp.data.total)
 
       if (deviceBeforeLength !== tmp.data.total) {
+        if (fastCompare) {
+          fastCompare = false
+          console.log('嘤嘤嘤')
+
+          deviceBeforeLength = tmp.data.total
+          deviceBefore.value = tmp2
+          return
+        }
         const result = compareLists(deviceBefore.value, tmp2)
         console.log('testtest3', tmp2, deviceBefore.value, result)
         console.log('123123123', result.added)
@@ -222,6 +247,10 @@ export default defineComponent({
 }
 
 .left-side {
+  display: flex;
+  /* align-items: center; */
+  flex-direction: column;
+  justify-content: flex-start;
   width: 20vw; /* 左侧固定宽度为 200px */
   background-color: #f0f0f0; /* 左侧背景颜色 */
 }

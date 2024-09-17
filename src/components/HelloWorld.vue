@@ -77,18 +77,43 @@
           v-show="chartsPicNum === 1 && allData.deviceType !== 'ascend'"
           class="chart-item2"
         >
+          <div id="gpuPic" class="chart-content2" style="height: 400px"></div>
+        </div>
+        <!-- <div
+          key="gpu1Pic"
+          v-show="chartsPicNum === 1 && allData.deviceType !== 'ascend'"
+          class="chart-item2"
+        >
           <div
-            id="gpuPic"
+            id="gpu1Pic"
             class="chart-content2"
-            style="width: 40vw; height: 400px"
+            style=" height: 400px"
           ></div>
         </div>
-        <div key="cpuPic" v-show="chartsPicNum === 1" class="chart-item2">
+        <div
+          key="gpu2Pic"
+          v-show="chartsPicNum === 1 && allData.deviceType !== 'ascend'"
+          class="chart-item2"
+        >
           <div
-            id="cpuPic"
-            style="width: 40vw; height: 400px"
+            id="gpu2Pic"
             class="chart-content2"
+            style=" height: 400px"
           ></div>
+        </div>
+        <div
+          key="gpu3Pic"
+          v-show="chartsPicNum === 1 && allData.deviceType !== 'ascend'"
+          class="chart-item2"
+        >
+          <div
+            id="gpu3Pic"
+            class="chart-content2"
+            style=" height: 400px"
+          ></div>
+        </div> -->
+        <div key="cpuPic" v-show="chartsPicNum === 1" class="chart-item2">
+          <div id="cpuPic" style="height: 400px" class="chart-content2"></div>
         </div>
         <div
           key="npuPic"
@@ -99,27 +124,19 @@
           "
           class="chart-item2"
         >
-          <div
-            id="npuPic"
-            style="width: 40vw; height: 400px"
-            class="chart-content2"
-          ></div>
+          <div id="npuPic" style="height: 400px" class="chart-content2"></div>
         </div>
+
         <div key="memPic" v-show="chartsPicNum === 1" class="chart-item2">
-          <div
-            id="memPic"
-            style="width: 40vw; height: 400px"
-            class="chart-content2"
-          ></div>
+          <div id="memPic" style="height: 400px" class="chart-content2"></div>
         </div>
       </div>
-      <a-table
+      <!-- <a-table
         style="margin-top: 4vh; width: 100%"
         :columns="columns"
         :data-source="deployLists"
         :pagination="pagination"
       >
-        <!-- :show-total="total => `一共${pagination.value.total}`" -->
         <template #headerCell="{ column }">
           <template v-if="column.key === 'deviceName'">
             <span>
@@ -145,9 +162,7 @@
             </a>
           </template>
 
-          <!-- <template v-if="column.key === 'progress'">
-            <a-progress :percent="record.progress" />
-          </template> -->
+          
 
           <template v-else-if="column.key === 'action'">
             <a-button
@@ -166,7 +181,7 @@
             >
           </template>
         </template>
-      </a-table>
+      </a-table> -->
     </a-layout-content>
     <a-modal
       v-model:open="isReStartModalVisible"
@@ -383,8 +398,14 @@ const chartsPicNum = ref(0)
 const selectedChart = ref('cpu')
 const chartData = ref({
   cpu: 0,
-  gpu: 0,
-  npu: 0,
+  gpu: 'N/A',
+  gpu1: 'N/A',
+  gpu2: 'N/A',
+  gpu3: 'N/A',
+  npu: 'N/A',
+  npu1: 'N/A',
+  npu2: 'N/A',
+  npu3: 'N/A',
   networkUpload: 0,
   networkDownload: 0
 })
@@ -453,9 +474,15 @@ const deployLists = ref([])
 
 const networkUploadData = ref([0, 0, 0, 0, 0, 0, 0])
 const networkDownloadData = ref([0, 0, 0, 0, 0, 0, 0])
-const gpuPicData = ref([0, 0, 0, 0, 0, 0, 0])
+const gpuPicData = ref([-1, -1, -1, -1, -1, -1, -1])
+const gpu1PicData = ref([-1, -1, -1, -1, -1, -1, -1])
+const gpu2PicData = ref([-1, -1, -1, -1, -1, -1, -1])
+const gpu3PicData = ref([-1, -1, -1, -1, -1, -1, -1])
 const cpuPicData = ref([0, 0, 0, 0, 0, 0, 0])
-const npuPicData = ref([0, 0, 0, 0, 0, 0, 0])
+const npuPicData = ref([-1, -1, -1, -1, -1, -1, -1])
+const npu1PicData = ref([-1, -1, -1, -1, -1, -1, -1])
+const npu2PicData = ref([-1, -1, -1, -1, -1, -1, -1])
+const npu3PicData = ref([-1, -1, -1, -1, -1, -1, -1])
 const memPicData = ref([0, 0, 0, 0, 0, 0, 0])
 
 let pagination = ref({
@@ -487,13 +514,15 @@ const router = useRouter()
 const route = useRoute()
 
 const charts = [
+  { key: 'gpu', id: 'gpuChart', title: 'GPU1 Usage' },
+  { key: 'gpu1', id: 'gpu1Chart', title: 'GPU2 Usage' },
+  { key: 'gpu2', id: 'gpu2Chart', title: 'GPU3 Usage' },
+  { key: 'gpu3', id: 'gpu3Chart', title: 'GPU4 Usage' },
+  { key: 'npu', id: 'npuChart', title: 'NPU1 Usage' },
+  { key: 'npu1', id: 'npu1Chart', title: 'NPU2 Usage' },
+  { key: 'npu2', id: 'npu2Chart', title: 'NPU3 Usage' },
+  { key: 'npu3', id: 'npu3Chart', title: 'NPU4 Usage' },
   { key: 'cpu', id: 'cpuChart', title: 'CPU Usage' },
-  // { key: 'gpu0', id: 'gpuChart', title: 'GPU Usage' },
-  // { key: 'gpu1', id: 'gpuChart', title: 'GPU Usage' },
-  // { key: 'gpu2', id: 'gpuChart', title: 'GPU Usage' },
-  // { key: 'gpu3', id: 'gpuChart', title: 'GPU Usage' },
-  { key: 'npu', id: 'npuChart', title: 'NPU Usage' },
-  // { key: 'memory', id: 'memory', title: 'Memory Usage' },
   { key: 'networkUpload', id: 'networkUpload', title: 'networkUpload Usage' },
   {
     key: 'networkDownload',
@@ -503,16 +532,21 @@ const charts = [
 ]
 
 const chartsRender = [
+  { key: 'gpu', id: 'gpuChart', title: 'GPU1 Usage' },
+  { key: 'gpu1', id: 'gpu1Chart', title: 'GPU2 Usage' },
+  { key: 'gpu2', id: 'gpu2Chart', title: 'GPU3 Usage' },
+  { key: 'gpu3', id: 'gpu3Chart', title: 'GPU4 Usage' },
+  { key: 'npu', id: 'npuChart', title: 'NPU1 Usage' },
+  { key: 'npu1', id: 'npu1Chart', title: 'NPU2 Usage' },
+  { key: 'npu2', id: 'npu2Chart', title: 'NPU3 Usage' },
+  { key: 'npu3', id: 'npu3Chart', title: 'NPU4 Usage' },
   { key: 'cpu', id: 'cpuChart', title: 'CPU Usage' },
-  { key: 'gpu', id: 'gpuChart', title: 'GPU Usage' },
-  { key: 'npu', id: 'npuChart', title: 'NPU Usage' },
   { key: 'networkUpload', id: 'networkUpload', title: 'networkUpload Usage' },
   {
     key: 'networkDownload',
     id: 'networkDownload',
     title: 'networkDownload Usage'
   },
-  // { key: 'memory', id: 'memory', title: 'Memory Usage' },
   { key: 'network', id: 'network', title: 'Network Usage' },
   { key: 'gpuPic', id: 'gpuPic', title: 'GPU Usage' },
   { key: 'cpuPic', id: 'cpuPic', title: 'CPU Usage' },
@@ -527,7 +561,13 @@ const fetchData = async () => {
     chartData.value = {
       cpu: 70,
       gpu: 0,
-      npu: 0
+      gpu1: 0,
+      gpu2: 0,
+      gpu3: 0,
+      npu: 0,
+      npu1: 0,
+      npu2: 0,
+      npu3: 0
     }
     let tmp = await DeviceList()
     if (tmp.data.onlineList !== undefined) {
@@ -596,8 +636,37 @@ const fetchData = async () => {
           console.log('道爷，我成了 FUCKK', chartsPicNumOptions.value)
 
           chartData.value.cpu = element.cpu.toFixed(2)
-          chartData.value.gpu = element.gpu
-          chartData.value.npu = element.npu
+          if (element.npu.length === 1) {
+            chartData.value.npu = element.npu[0].usage
+            console.log('哈哈', chartData.value.npu)
+          } else if (element.npu.length === 2) {
+            chartData.value.npu1 = element.npu[1].usage
+            setDivWidthToZero('npu1Chart')
+            setDivWidthToZero('npu2Chart')
+            setDivWidthToZero('npu3Chart')
+          } else if (element.npu.length === 3) {
+            chartData.value.npu2 = element.npu[2].usage
+            setDivWidthToZero('npu2Chart')
+            setDivWidthToZero('npu3Chart')
+          } else if (element.npu.length === 4) {
+            chartData.value.npu3 = element.npu[3].usage
+            setDivWidthToZero('npu3Chart')
+          }
+          if (element.gpu.length === 1) {
+            chartData.value.gpu = element.gpu[0].usage
+          } else if (element.gpu.length === 2) {
+            chartData.value.gpu1 = element.gpu[1].usage
+            setDivWidthToZero('gpu1Chart')
+            setDivWidthToZero('gpu2Chart')
+            setDivWidthToZero('gpu3Chart')
+          } else if (element.gpu.length === 3) {
+            chartData.value.gpu2 = element.gpu[2].usage
+            setDivWidthToZero('gpu2Chart')
+            setDivWidthToZero('gpu3Chart')
+          } else if (element.gpu.length === 4) {
+            chartData.value.gpu3 = element.gpu[3].usage
+            setDivWidthToZero('gpu3Chart')
+          }
           allData.value.ip = element.ip
           tmpName.value = element.name
           console.log('###', element.memoryTotal, element.memoryUsed)
@@ -617,9 +686,30 @@ const fetchData = async () => {
           networkDownloadData.value = [...tmp2]
 
           let tmp3 = [...gpuPicData.value]
-          tmp3.push(element.gpu.toFixed(2))
+          if (element.gpu.length === 1) {
+            tmp3.push(element.gpu[0].usage.toFixed(2))
+          }
           tmp3.shift()
           gpuPicData.value = [...tmp3]
+
+          let tmp31 = [...gpu1PicData.value]
+          if (element.gpu.length === 2) {
+            tmp31.push(element.gpu[1].usage.toFixed(2))
+          }
+          tmp31.shift()
+          gpu1PicData.value = [...tmp31]
+          let tmp32 = [...gpu2PicData.value]
+          if (element.gpu.length === 3) {
+            tmp32.push(element.gpu[2].usage.toFixed(2))
+          }
+          tmp32.shift()
+          gpu2PicData.value = [...tmp32]
+          let tmp33 = [...gpu3PicData.value]
+          if (element.gpu.length === 4) {
+            tmp33.push(element.gpu[3].usage.toFixed(2))
+          }
+          tmp33.shift()
+          gpu3PicData.value = [...tmp33]
 
           let tmp4 = [...cpuPicData.value]
           tmp4.push(element.cpu.toFixed(2))
@@ -627,7 +717,11 @@ const fetchData = async () => {
           cpuPicData.value = [...tmp4]
 
           let tmp5 = [...npuPicData.value]
-          tmp5.push(element.npu.toFixed(2))
+          if (element.npu.length > 0) {
+            tmp5.push(element.npu[0].usage.toFixed(2))
+          } else {
+            tmp5.push(0)
+          }
           tmp5.shift()
           npuPicData.value = [...tmp5]
 
@@ -688,6 +782,18 @@ const renderCharts = () => {
         // setDivWidthToZero(npu)
         return
       }
+      if (chart.key === 'npu1') {
+        // setDivWidthToZero(npu1)
+        return
+      }
+      if (chart.key === 'npu2') {
+        // setDivWidthToZero(npu2)
+        return
+      }
+      if (chart.key === 'npu3') {
+        // setDivWidthToZero(npu3)
+        return
+      }
     }
     if (deviceType.value === 'ascend') {
       if (chart.key === 'gpu') {
@@ -723,11 +829,6 @@ const renderCharts = () => {
             show: true,
             width: 18
           },
-          // axisLine: {
-          //   lineStyle: {
-          //     width: 18
-          //   }
-          // },
           axisTick: {
             show: false
           },
@@ -798,7 +899,6 @@ const renderCharts = () => {
       },
       tooltip: {
         trigger: 'axis'
-        //formatter: networkHandleFunc(params)
       },
       legend: {
         data: [`'上行占用 (%)' , '下行占用 (%)'`]
@@ -835,7 +935,7 @@ const renderCharts = () => {
         //formatter: networkHandleFunc(params)
       },
       legend: {
-        data: [`'占用 (%)' `]
+        data: [`'GPU1占用 (%)','GPU2占用 (%)','GPU3占用 (%)','GPU4占用 (%)' `]
       },
       xAxis: {
         type: 'category',
@@ -846,12 +946,81 @@ const renderCharts = () => {
       },
       series: [
         {
-          name: '占用 (%)',
+          name: 'GPU1占用 (%)',
           type: 'line',
-          //stack: 'Total',
           data: gpuPicData.value
+        },
+        {
+          name: 'GPU2占用 (%)',
+          type: 'line',
+          data: gpu1PicData.value
+        },
+        {
+          name: 'GPU3占用 (%)',
+          type: 'line',
+          data: gpu2PicData.value
+        },
+        {
+          name: 'GPU4占用 (%)',
+          type: 'line',
+          data: gpu3PicData.value
         }
       ]
+
+      // () => {
+      //   console.log('嘤嘤嘤')
+      //   if (gpuNumber === 1) {
+      //   } else if (gpuNumber === 2) {
+      //   } else if (gpuNumber === 3) {
+      //     return [
+      //       {
+      //         name: '占用 (%)',
+      //         type: 'line',
+      //         //stack: 'Total',
+      //         data: gpuPicData.value
+      //       },
+      //       {
+      //         name: '占用 (%)',
+      //         type: 'line',
+      //         //stack: 'Total',
+      //         data: gpu1PicData.value
+      //       },
+      //       {
+      //         name: '占用 (%)',
+      //         type: 'line',
+      //         //stack: 'Total',
+      //         data: gpu2PicData.value
+      //       }
+      //     ]
+      //   } else if (gpuNumber === 4) {
+      //     return [
+      //       {
+      //         name: '占用 (%)',
+      //         type: 'line',
+      //         //stack: 'Total',
+      //         data: gpuPicData.value
+      //       },
+      //       {
+      //         name: '占用 (%)',
+      //         type: 'line',
+      //         //stack: 'Total',
+      //         data: gpu1PicData.value
+      //       },
+      //       {
+      //         name: '占用 (%)',
+      //         type: 'line',
+      //         //stack: 'Total',
+      //         data: gpu2PicData.value
+      //       },
+      //       {
+      //         name: '占用 (%)',
+      //         type: 'line',
+      //         //stack: 'Total',
+      //         data: gpu3PicData.value
+      //       }
+      //     ]
+      //   }
+      // }
     }
     const option5 = {
       title: {
@@ -875,7 +1044,6 @@ const renderCharts = () => {
         {
           name: '占用 (%)',
           type: 'line',
-          //stack: 'Total',
           data: cpuPicData.value
         }
       ]
@@ -890,7 +1058,7 @@ const renderCharts = () => {
         trigger: 'axis'
       },
       legend: {
-        data: [`'占用 (%)' `]
+        data: [`'NPU1占用 (%)','NPU2占用 (%)','NPU3占用 (%)','NPU4占用 (%)' `]
       },
       xAxis: {
         type: 'category',
@@ -901,10 +1069,24 @@ const renderCharts = () => {
       },
       series: [
         {
-          name: '占用 (%)',
+          name: 'NPU1占用 (%)',
           type: 'line',
-          //stack: 'Total',
           data: npuPicData.value
+        },
+        {
+          name: 'NPU2占用 (%)',
+          type: 'line',
+          data: npu1PicData.value
+        },
+        {
+          name: 'NPU3占用 (%)',
+          type: 'line',
+          data: npu2PicData.value
+        },
+        {
+          name: 'NPU4占用 (%)',
+          type: 'line',
+          data: npu3PicData.value
         }
       ]
     }
@@ -937,7 +1119,17 @@ const renderCharts = () => {
       ]
     }
 
-    if (chart.key === 'gpu' || chart.key === 'npu' || chart.key === 'cpu') {
+    if (
+      chart.key === 'gpu' ||
+      chart.key === 'npu' ||
+      chart.key === 'cpu' ||
+      chart.key === 'gpu1' ||
+      chart.key === 'gpu2' ||
+      chart.key === 'gpu3' ||
+      chart.key === 'npu1' ||
+      chart.key === 'npu2' ||
+      chart.key === 'npu3'
+    ) {
       chartInstance.setOption(option1)
     }
     if (chart.key === 'memory') {
@@ -996,9 +1188,16 @@ function setDivWidthToZero(id) {
   }
 }
 
+let gpuNumber = 0
+let npuNumber = 0
+
+let timerId
+
 const startExecution = () => {
-  let interval = 1000
-  let timerId
+  let interval = 2000
+  // let timerId
+
+  console.log('??', chartData.value.npu)
 
   const executeFunction = async () => {
     // let tmp = await DeviceList()
@@ -1006,11 +1205,15 @@ const startExecution = () => {
       id: Number(route.path.slice(7))
     })
 
+    console.log('测试捏', route.path, allStore.currentUrl)
+
     if (route.path !== allStore.currentUrl) {
-      console.log('路由检测', route.path, '--', allStore.currentUrl)
+      clearInterval(timerId)
+      console.log('检测到变化')
+      // allStore.currentUrl = route.path
+
       fastRequest = false
       console.log('路由检测', fastRequest)
-      clearInterval(timerId)
       interval = 600000000
       timerId = setInterval(executeFunction, interval)
     }
@@ -1024,8 +1227,12 @@ const startExecution = () => {
       //   // }
       // })
       chartData.value.cpu = tmp.data.metrics.cpu.toFixed(2)
-      chartData.value.gpu = tmp.data.metrics.gpu
-      chartData.value.npu = tmp.data.metrics.npu
+      if (tmp.data.metrics.gpu.length > 0) {
+        chartData.value.gpu = tmp.data.metrics.gpu[0].usage
+      }
+      if (tmp.data.metrics.npu.length > 0) {
+        chartData.value.npu = tmp.data.metrics.npu[0].usage
+      }
       chartData.value.networkUpload = tmp.data.metrics.networkUpload.toFixed(2)
       chartData.value.networkDownload =
         tmp.data.metrics.networkDownload.toFixed(2)
@@ -1046,9 +1253,34 @@ const startExecution = () => {
       networkDownloadData.value = [...tmp2]
 
       let tmp3 = [...gpuPicData.value]
-      tmp3.push(tmp.data.metrics.gpu.toFixed(2))
+      if (tmp.data.metrics.gpu.length === 1) {
+        gpuNumber = 1
+        tmp3.push(tmp.data.metrics.gpu[0].usage.toFixed(2))
+      }
       tmp3.shift()
       gpuPicData.value = [...tmp3]
+
+      let tmp31 = [...gpu1PicData.value]
+      if (tmp.data.metrics.gpu.length === 2) {
+        gpuNumber = 2
+        tmp31.push(tmp.data.metrics.gpu[1].usage.toFixed(2))
+      }
+      tmp31.shift()
+      gpu1PicData.value = [...tmp31]
+      let tmp32 = [...gpu2PicData.value]
+      if (tmp.data.metrics.gpu.length === 3) {
+        gpuNumber = 3
+        tmp32.push(tmp.data.metrics.gpu[2].usage.toFixed(2))
+      }
+      tmp32.shift()
+      gpu2PicData.value = [...tmp32]
+      let tmp33 = [...gpu3PicData.value]
+      if (tmp.data.metrics.gpu.length === 4) {
+        gpuNumber = 4
+        tmp33.push(tmp.data.metrics.gpu[3].usage.toFixed(2))
+      }
+      tmp33.shift()
+      gpu3PicData.value = [...tmp33]
 
       let tmp4 = [...cpuPicData.value]
       tmp4.push(tmp.data.metrics.cpu.toFixed(2))
@@ -1056,9 +1288,30 @@ const startExecution = () => {
       cpuPicData.value = [...tmp4]
 
       let tmp5 = [...npuPicData.value]
-      tmp5.push(tmp.data.metrics.npu.toFixed(2))
+      if (tmp.data.metrics.npu.length > 0) {
+        tmp5.push(tmp.data.metrics.npu[0].usage.toFixed(2))
+      }
       tmp5.shift()
       npuPicData.value = [...tmp5]
+
+      let tmp51 = [...npu1PicData.value]
+      if (tmp.data.metrics.npu.length > 1) {
+        tmp51.push(tmp.data.metrics.npu[1].usage.toFixed(2))
+      }
+      tmp51.shift()
+      npu1PicData.value = [...tmp51]
+      let tmp52 = [...npu2PicData.value]
+      if (tmp.data.metrics.npu.length > 2) {
+        tmp52.push(tmp.data.metrics.npu[2].usage.toFixed(2))
+      }
+      tmp52.shift()
+      npu2PicData.value = [...tmp52]
+      let tmp53 = [...npu3PicData.value]
+      if (tmp.data.metrics.npu.length > 3) {
+        tmp53.push(tmp.data.metrics.npu[3].usage.toFixed(2))
+      }
+      tmp53.shift()
+      npu3PicData.value = [...tmp53]
 
       let tmp6 = [...memPicData.value]
       let tmp6Num = divideStrings(
@@ -1092,6 +1345,43 @@ const networkHandleFunc = speed => {
 
 // 初次加载数据
 onMounted(async () => {
+  // if (allStore.currentUrl === '') {
+  //   allStore.currentUrl = route.path
+  // }
+  allStore.currentUrl = route.path
+  // if (allStore.currentUrl !== route.path) {
+  //   // fastRequest = false
+  //   clearInterval(timerId)
+  //   allStore.currentUrl = route.path
+  // }
+  // if(route.path==='/route'){
+
+  // }
+  // console.log('啊这', route.path, allStore.currentUrl)
+  // if (route.path !== allStore.currentUrl) {
+  //   window.location.reload()
+  // }
+  console.log('WTF', allStore.currentUrl)
+
+  let isDevice = localStorage.getItem('isDevice')
+  console.log('??', isDevice)
+
+  if (isDevice === true) {
+    localStorage.setItem('isDevice', false)
+    nextTick(() => {
+      window.location.reload()
+    })
+  }
+
+  // let tmp = localStorage.getItem('isDevice')
+  // console.log('hahaha', tmp)
+
+  // if (tmp) {
+  //   localStorage.setItem('isDevice', false)
+  //   // window.location.reload()
+  //   console.log('该刷新了')
+  // }
+  // window.location.reload()
   let deviceInfoReq = await onlineListDeviceReq({
     id: Number(route.path.slice(7))
   })
@@ -1122,30 +1412,39 @@ onMounted(async () => {
     console.log('DOM is fully rendered and updated')
     if (tmp1.data.info.deviceType === 'jetson') {
       setDivWidthToZero('npuChart')
+      setDivWidthToZero('npu1Chart')
+      setDivWidthToZero('npu2Chart')
+      setDivWidthToZero('npu3Chart')
     }
     if (tmp1.data.info.deviceType === 'ascend') {
       setDivWidthToZero('gpuChart')
+      setDivWidthToZero('gpu1Chart')
+      setDivWidthToZero('gpu2Chart')
+      setDivWidthToZero('gpu3Chart')
     }
   })
 
   // allStore.saveCurrentUrl(route.path)
-  allStore.currentUrl = route.path
   // NOTE: 停止执行请求可以通过检测当前的 url 啊
   startExecution()
 
-  const interval2 = setInterval(() => {
-    updateTimeArray()
-    const chartInstance = echarts.init(document.getElementById('cpu'))
+  // const interval2 = setInterval(() => {
+  //   updateTimeArray()
+  //   const chartInstance = echarts.init(document.getElementById('cpu'))
 
-    chartInstance.setOption({
-      xAxis: {
-        data: timeArray.value // 更新 xAxis 的 data
-      }
-    })
-  }, 1000)
-  onUnmounted(() => {
-    clearInterval(interval)
-  })
+  //   chartInstance.setOption({
+  //     xAxis: {
+  //       data: timeArray.value // 更新 xAxis 的 data
+  //     }
+  //   })
+  // }, 1000)
+})
+onUnmounted(() => {
+  console.log('有没有执行')
+
+  clearInterval(timerId)
+  // interval = 600000000
+  // timerId = setInterval(executeFunction, interval)
 })
 </script>
 
@@ -1197,11 +1496,11 @@ body {
 }
 
 /* 响应式布局调整 */
-@media (max-width: 1024px) {
+/* @media (max-width: 1024px) {
   .chart-item2 {
-    flex: 1 1 45vw; /* 中等屏幕调整 */
+    flex: 1 1 45vw; 
   }
-}
+} */
 
 @media (max-width: 768px) {
   .chart-item2 {

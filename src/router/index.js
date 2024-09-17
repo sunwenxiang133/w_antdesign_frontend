@@ -34,6 +34,17 @@ const router = createRouter({
   routes
 })
 
+// 路由守卫
+router.beforeEach((to, from, next) => {
+  // 检查是否是 /device:id 的路由
+  if (to.path.startsWith('/device')) {
+    localStorage.setItem('isDevice', true)
+    next() // 允许导航，之后再刷新页面
+  } else {
+    next()
+  }
+})
+
 // 重定向不报错
 const originalPush = router.push
 router.push = function push(location, onResolve, onReject) {

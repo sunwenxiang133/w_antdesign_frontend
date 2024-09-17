@@ -84,3 +84,6 @@ export const onlineListDeviceReq = data =>
 
 export const allOnlineListDeviceReq = data =>
   requests.post('/v1/device/onlineList', data)
+
+// NOTE: 部署任务搜索
+export const DeploySearch = data => requests.post('/v1/deploy/search', data)
