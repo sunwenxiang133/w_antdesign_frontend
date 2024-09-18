@@ -7,6 +7,7 @@
       @select="handleSelect"
       class="left-side"
       style="height: 100vh"
+      :selectedKeys="[selectedKey]"
     >
       <div
         style="
@@ -25,22 +26,6 @@
           <a-menu-item v-if="!menu.children" :key="menu.key">
             {{ menu.title }}
           </a-menu-item>
-          <!-- <a-sub-menu v-else :key="device" :title="menu.title">
-          <template v-for="subMenu in menu.children" :key="subMenu.key">
-            <a-menu-item-group
-              v-if="subMenu.children"
-              :key="subMenu.key"
-              :title="subMenu.title"
-            >
-              <a-menu-item v-for="item in subMenu.children" :key="item.key">
-                {{ item.title }}
-              </a-menu-item>
-            </a-menu-item-group>
-            <a-menu-item v-else :key="subMenu.key">
-              {{ subMenu.title }}
-            </a-menu-item>
-          </template>
-        </a-sub-menu> -->
           <a-sub-menu v-else :key="device" :title="menu.title">
             <template v-for="subMenu in menu.children" :key="subMenu.key">
               <a-menu-item-group
@@ -89,6 +74,8 @@ export default defineComponent({
     const router = useRouter()
     const route = useRoute()
 
+    const selectedKey = ref(route.path) // 默认选中当前路由的路径
+
     const routeId = route.params.id
 
     const menus = ref([
@@ -114,7 +101,6 @@ export default defineComponent({
     const handleSelect = ({ key }) => {
       console.log('selected key:', key)
       router.push(key)
-      // location.reload()
     }
 
     let deviceBefore = ref([])
@@ -224,6 +210,10 @@ export default defineComponent({
     }
 
     provide('updateMenuMethod', updateMenuMethod)
+
+    watch(route, newRoute => {
+      selectedKey.value = newRoute.path
+    })
 
     onMounted(() => {
       updateMenuMethod()

@@ -123,7 +123,7 @@ import {
   DeployRestartDownload,
   DeploySearch
 } from '../api/api.js'
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 
 const searchText = ref('')
@@ -133,6 +133,7 @@ const router = useRouter()
 const switchToPage = id => {
   console.log('点击事件', id)
   router.push('/device' + id)
+  // window.location.reload()
 }
 
 const filterCards = async () => {
@@ -333,10 +334,10 @@ const startExecution = () => {
 
   const executeFunction = async () => {
     let tmp = await DeployList({
-      pageNum: 1,
-      pageSize: 100
+      pageNum: pagination.value.current,
+      pageSize: pagination.value.pageSize
     })
-    deployLists.value = tmp.data.list
+    // deployLists.value = tmp.data.list
     let fastRequest = true
     let allDeployed = false
     let deployedNum = 0
@@ -352,6 +353,11 @@ const startExecution = () => {
     //     fastRequest = false
     //   }
     // }
+
+    deployLists.value = tmp.data.list
+    pagination.value.total = tmp.data.total
+    deployOverview.value[0] = tmp.data.total
+    deployOverview.value[1] = tmp.data.runningNum
 
     if (route.path !== '/deploy') {
       fastRequest = false
@@ -451,6 +457,12 @@ const handleSizeChange = totalPage => {
   console.log('每页显示条目数：', totalPage)
   totalPage.value = totalPage
 }
+
+// onUnmounted(() => {
+//   console.log('有没有执行')
+
+//   clearInterval(timerId)
+// })
 </script>
 
 <style lang="scss" scoped></style>

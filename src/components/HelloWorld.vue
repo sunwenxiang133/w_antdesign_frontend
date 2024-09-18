@@ -37,6 +37,12 @@
         <a-col :span="8">
           <a-statistic title="总内存" :value="memoryData[1].value" />
         </a-col>
+        <!-- <a-col :span="8">
+          <a-statistic title="运行中任务" :value="allData.runningTask" />
+        </a-col> -->
+        <!-- <a-col :span="8">
+          <a-statistic title="运行任务总数" :value="memoryData[1].value" />
+        </a-col> -->
       </a-row>
     </a-card>
     <a-layout-content
@@ -407,7 +413,9 @@ const chartData = ref({
   npu2: 'N/A',
   npu3: 'N/A',
   networkUpload: 0,
-  networkDownload: 0
+  networkDownload: 0,
+  runningTask: 0
+  // runningNumber: 0
 })
 
 const handleBlur = () => {
@@ -727,7 +735,7 @@ const fetchData = async () => {
 
           let tmp6 = [...memPicData.value]
           let tmp6Num = divideStrings(element.memoryTotal, element.memoryUsed)
-          tmp6.push(tmp6Num)
+          tmp6.push(tmp6Num.toFixed(2))
 
           console.log('WTFF', tmp3, tmp4, cpuPicData.value, gpuPicData.value)
         }
@@ -1241,6 +1249,8 @@ const startExecution = () => {
 
       memoryData.value[0].value = tmp.data.metrics.memoryUsed
       memoryData.value[1].value = tmp.data.metrics.memoryTotal
+      allData.value.runningTask = tmp.data.metrics.runningTask
+      // allData.value.runningNumber = tmp.data.metrics.runningNumber
 
       let tmp1 = [...networkUploadData.value]
       tmp1.push((tmp.data.metrics.networkUpload * 100).toFixed(6))
@@ -1318,7 +1328,7 @@ const startExecution = () => {
         tmp.data.metrics.memoryTotal,
         tmp.data.metrics.memoryUsed
       )
-      tmp6.push(tmp6Num)
+      tmp6.push(tmp6Num.toFixed(2))
       tmp6.shift()
       memPicData.value = [...tmp6]
     }
@@ -1390,6 +1400,8 @@ onMounted(async () => {
   allData.value.ip = deviceInfoReq.data.info.ip
   memoryData.value[0].value = deviceInfoReq.data.metrics.memoryUsed
   memoryData.value[1].value = deviceInfoReq.data.metrics.memoryTotal
+  allData.value.runningTask = deviceInfoReq.data.metrics.runningTask
+  // allData.value.runningNumber = deviceInfoReq.data.metrics.runningNumber
 
   tmpName.value = deviceInfoReq.data.info.name
 
@@ -1410,13 +1422,20 @@ onMounted(async () => {
 
   nextTick(() => {
     console.log('DOM is fully rendered and updated')
-    if (tmp1.data.info.deviceType === 'jetson') {
+    if (
+      tmp1.data.info.deviceType === 'jetson' ||
+      tmp1.data.info.deviceType === 'cambricon' ||
+      tmp1.data.info.deviceType === 'kylin'
+    ) {
       setDivWidthToZero('npuChart')
       setDivWidthToZero('npu1Chart')
       setDivWidthToZero('npu2Chart')
       setDivWidthToZero('npu3Chart')
     }
-    if (tmp1.data.info.deviceType === 'ascend') {
+    if (
+      tmp1.data.info.deviceType === 'ascend' ||
+      tmp1.data.info.deviceType === 'kylin'
+    ) {
       setDivWidthToZero('gpuChart')
       setDivWidthToZero('gpu1Chart')
       setDivWidthToZero('gpu2Chart')
