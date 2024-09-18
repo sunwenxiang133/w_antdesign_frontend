@@ -258,9 +258,10 @@ const handleOk = async () => {
   })
   message.info(tmp1.data.msg)
 
-  let tmp = await DeployList({
+  let tmp = await DeploySearch({
     pageNum: pagination.value.current,
-    pageSize: pagination.value.pageSize
+    pageSize: pagination.value.pageSize,
+    search: searchText.value
   })
   deployLists.value = tmp.data.list
   pagination.value.total = tmp.data.total
@@ -333,9 +334,10 @@ const startExecution = () => {
   let timerId
 
   const executeFunction = async () => {
-    let tmp = await DeployList({
+    let tmp = await DeploySearch({
       pageNum: pagination.value.current,
-      pageSize: pagination.value.pageSize
+      pageSize: pagination.value.pageSize,
+      search: searchText.value
     })
     // deployLists.value = tmp.data.list
     let fastRequest = true
