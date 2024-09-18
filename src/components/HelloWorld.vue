@@ -1202,7 +1202,7 @@ let npuNumber = 0
 let timerId
 
 const startExecution = () => {
-  let interval = 2000
+  let interval = 1000
   // let timerId
 
   console.log('??', chartData.value.npu)
@@ -1263,30 +1263,30 @@ const startExecution = () => {
       networkDownloadData.value = [...tmp2]
 
       let tmp3 = [...gpuPicData.value]
-      if (tmp.data.metrics.gpu.length === 1) {
-        gpuNumber = 1
+      if (tmp.data.metrics.gpu.length > 0) {
+        // gpuNumber = 1
         tmp3.push(tmp.data.metrics.gpu[0].usage.toFixed(2))
       }
       tmp3.shift()
       gpuPicData.value = [...tmp3]
 
       let tmp31 = [...gpu1PicData.value]
-      if (tmp.data.metrics.gpu.length === 2) {
-        gpuNumber = 2
+      if (tmp.data.metrics.gpu.length > 1) {
+        // gpuNumber = 2
         tmp31.push(tmp.data.metrics.gpu[1].usage.toFixed(2))
       }
       tmp31.shift()
       gpu1PicData.value = [...tmp31]
       let tmp32 = [...gpu2PicData.value]
-      if (tmp.data.metrics.gpu.length === 3) {
-        gpuNumber = 3
+      if (tmp.data.metrics.gpu.length > 2) {
+        // gpuNumber = 3
         tmp32.push(tmp.data.metrics.gpu[2].usage.toFixed(2))
       }
       tmp32.shift()
       gpu2PicData.value = [...tmp32]
       let tmp33 = [...gpu3PicData.value]
-      if (tmp.data.metrics.gpu.length === 4) {
-        gpuNumber = 4
+      if (tmp.data.metrics.gpu.length > 3) {
+        // gpuNumber = 4
         tmp33.push(tmp.data.metrics.gpu[3].usage.toFixed(2))
       }
       tmp33.shift()
@@ -1339,6 +1339,7 @@ const startExecution = () => {
       interval = 600000000
       timerId = setInterval(executeFunction, interval)
     }
+    updateTimeArray()
     renderCharts()
   }
 
@@ -1448,7 +1449,7 @@ onMounted(async () => {
   startExecution()
 
   // const interval2 = setInterval(() => {
-  //   updateTimeArray()
+  // updateTimeArray()
   //   const chartInstance = echarts.init(document.getElementById('cpu'))
 
   //   chartInstance.setOption({

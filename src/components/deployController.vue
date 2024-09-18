@@ -47,7 +47,7 @@
             <template v-if="record.status === 2"> 已部署-正在运行 </template>
             <template v-if="record.status === 3"> 已部署-未运行 </template>
             <template v-if="record.status === 4"> 设备离线 </template>
-            <template v-if="record.status === 5"> 未运行 </template>
+            <template v-if="record.status === 5"> 已部署-未运行 </template>
           </a>
         </template>
 
